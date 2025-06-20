@@ -1,0 +1,66 @@
+// DateInputField.kt
+package com.example.mambappv2.ui.components.inputs
+
+import android.app.DatePickerDialog
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun DateInputField(
+    label: String,
+    date: String,
+    onDateChange: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val displayFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        val initial = if (date.isNotBlank()) LocalDate.parse(date, formatter) else LocalDate.now()
+        val today = LocalDate.now()
+
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val selected = LocalDate.of(year, month + 1, dayOfMonth)
+                onDateChange(selected.format(formatter))
+                showDialog = false
+            },
+            initial.year,
+            initial.monthValue - 1,
+            initial.dayOfMonth
+        ).apply {
+            datePicker.maxDate = today.toEpochDay() * 24 * 60 * 60 * 1000
+        }.show()
+    }
+
+    OutlinedButton(
+        onClick = { showDialog = true },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(text = label, style = MaterialTheme.typography.labelMedium)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = if (date.isNotBlank())
+                    LocalDate.parse(date, formatter).format(displayFormatter)
+                else
+                    "Seleccionar",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+}
