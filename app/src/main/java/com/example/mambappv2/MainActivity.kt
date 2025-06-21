@@ -5,9 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.mambappv2.data.entities.Monitoreo
 import com.example.mambappv2.navigation.NavigationRoutes
@@ -28,28 +26,33 @@ class MainActivity : ComponentActivity() {
             MambAppV2Theme {
                 val navController = rememberNavController()
 
-                // ViewModels manuales
-                val monitoreoVM: MonitoreoViewModel = viewModel(factory = MonitoreoViewModelFactory(appContainer.monitoreoRepository))
-                val pacienteVM: PacienteViewModel = viewModel(factory = PacienteViewModelFactory(appContainer.pacienteRepository))
-                val medicoVM: MedicoViewModel = viewModel(factory = MedicoViewModelFactory(appContainer.medicoRepository))
-                val tecnicoVM: TecnicoViewModel = viewModel(factory = TecnicoViewModelFactory(appContainer.tecnicoRepository))
-                val lugarVM: LugarViewModel = viewModel(factory = LugarViewModelFactory(appContainer.lugarRepository))
-                val patologiaVM: PatologiaViewModel = viewModel(factory = PatologiaViewModelFactory(appContainer.patologiaRepository))
-                val solicitanteVM: SolicitanteViewModel = viewModel(factory = SolicitanteViewModelFactory(appContainer.solicitanteRepository))
+                // ViewModels
+                val monitoreoVM = viewModel { MonitoreoViewModel(appContainer.monitoreoRepository) }
+                val pacienteVM = viewModel { PacienteViewModel(appContainer.pacienteRepository) }
+                val medicoVM = viewModel { MedicoViewModel(appContainer.medicoRepository) }
+                val tecnicoVM = viewModel { TecnicoViewModel(appContainer.tecnicoRepository) }
+                val lugarVM = viewModel { LugarViewModel(appContainer.lugarRepository) }
+                val patologiaVM = viewModel { PatologiaViewModel(appContainer.patologiaRepository) }
+                val solicitanteVM = viewModel { SolicitanteViewModel(appContainer.solicitanteRepository) }
+                val equipoVM = viewModel { EquipoViewModel(appContainer.equipoRepository) }
 
                 NavHost(
                     navController = navController,
                     startDestination = NavigationRoutes.Home.route
                 ) {
+
+                    // Home
                     composable(NavigationRoutes.Home.route) {
                         HomeScreen(
                             onNavigateToNew = { navController.navigate(NavigationRoutes.Form.route) },
-                            onNavigateToList = { navController.navigate(NavigationRoutes.Detail.route) }
+                            onNavigateToList = { navController.navigate(NavigationRoutes.List.route) }
                         )
                     }
 
+                    // Nuevo monitoreo
                     composable(NavigationRoutes.Form.route) {
                         MonitoreoScreen(
+                            monitoreo = null,
                             viewModel = monitoreoVM,
                             pacienteViewModel = pacienteVM,
                             medicoViewModel = medicoVM,
@@ -57,20 +60,64 @@ class MainActivity : ComponentActivity() {
                             lugarViewModel = lugarVM,
                             patologiaViewModel = patologiaVM,
                             solicitanteViewModel = solicitanteVM,
+                            equipoViewModel = equipoVM,
                             onBack = { navController.popBackStack() },
                             onSaveSuccess = { navController.popBackStack() }
                         )
                     }
 
+                    // Edición de monitoreo
+                    composable(NavigationRoutes.FormEdit.route) {
+                        val monitoreoEdit = navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.get<Monitoreo>("editarMonitoreo")
+
+                        MonitoreoScreen(
+                            monitoreo = monitoreoEdit,
+                            viewModel = monitoreoVM,
+                            pacienteViewModel = pacienteVM,
+                            medicoViewModel = medicoVM,
+                            tecnicoViewModel = tecnicoVM,
+                            lugarViewModel = lugarVM,
+                            patologiaViewModel = patologiaVM,
+                            solicitanteViewModel = solicitanteVM,
+                            equipoViewModel = equipoVM,
+                            onBack = { navController.popBackStack() },
+                            onSaveSuccess = { navController.popBackStack() }
+                        )
+                    }
+
+                    // Detalle de monitoreo
                     composable(NavigationRoutes.Detail.route) {
-                        val monitoreo =
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.get<Monitoreo>("monitoreo")
+                        val monitoreo = navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.get<Monitoreo>("monitoreo")
 
                         DetailScreen(
                             monitoreo = monitoreo,
-                            onBack = { navController.popBackStack() }
+                            lugarViewModel = lugarVM,
+                            patologiaViewModel = patologiaVM,
+                            medicoViewModel = medicoVM,
+                            tecnicoViewModel = tecnicoVM,
+                            solicitanteViewModel = solicitanteVM,
+                            monitoreoViewModel = monitoreoVM,
+                            pacienteViewModel = pacienteVM,
+                            equipoViewModel = equipoVM,
+                            onBack = { navController.popBackStack() },
+                            onEdit = { selected ->
+                                navController.currentBackStackEntry?.savedStateHandle
+                                    ?.set("editarMonitoreo", selected)
+                                navController.navigate(NavigationRoutes.FormEdit.route)
+                            }
+                        )
+                    }
+
+                    // Lista de monitoreos
+                    composable(NavigationRoutes.List.route) {
+                        ListScreen(
+                            viewModel = monitoreoVM,
+                            lugarViewModel = lugarVM,
+                            navController = navController
                         )
                     }
                 }

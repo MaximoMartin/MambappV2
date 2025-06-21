@@ -38,4 +38,7 @@ class MonitoreoFormState {
     var complicacion by mutableStateOf(false)
     var detalleComplicacion by mutableStateOf("")
     var cambioMotor by mutableStateOf("")
+
+    // Equipo
+    var selectedEquipoId by mutableStateOf(-1)
 }

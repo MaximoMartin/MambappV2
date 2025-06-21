@@ -18,12 +18,9 @@ import com.example.mambappv2.data.entities.Monitoreo
 import com.example.mambappv2.ui.components.dialogs.SimpleInputDialog
 import com.example.mambappv2.ui.components.monitoreo.FechaSection
 import com.example.mambappv2.ui.components.monitoreo.PacienteSection
-import com.example.mambappv2.viewmodel.*
-import com.example.mambappv2.ui.components.sections.DetalleClinicoSection
-import com.example.mambappv2.ui.components.sections.LugarSection
-import com.example.mambappv2.ui.components.sections.PatologiaSection
-import com.example.mambappv2.ui.components.sections.ProfesionalesSection
+import com.example.mambappv2.ui.components.sections.*
 import com.example.mambappv2.ui.state.MonitoreoFormState
+import com.example.mambappv2.viewmodel.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -39,12 +36,32 @@ fun MonitoreoScreen(
     lugarViewModel: LugarViewModel,
     patologiaViewModel: PatologiaViewModel,
     solicitanteViewModel: SolicitanteViewModel,
+    equipoViewModel: EquipoViewModel,
     onBack: () -> Unit,
     onSaveSuccess: () -> Unit
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val formState = remember { MonitoreoFormState() }
+
+    // Precargar datos si es edición
+    LaunchedEffect(monitoreo) {
+        monitoreo?.let {
+            formState.fechaRealizado = it.fechaRealizado
+            formState.fechaPresentado = it.fechaPresentado.orEmpty()
+            formState.fechaCobrado = it.fechaCobrado.orEmpty()
+            formState.dniPaciente = it.dniPaciente.toString()
+            formState.selectedMedicoId = it.idMedico
+            formState.selectedTecnicoId = it.idTecnico
+            formState.selectedLugarId = it.idLugar
+            formState.selectedPatologiaId = it.idPatologia
+            formState.selectedSolicitanteId = it.idSolicitante
+            formState.anestesia = it.detalleAnestesia
+            formState.complicacion = it.complicacion
+            formState.detalleComplicacion = it.detalleComplicacion
+            formState.cambioMotor = it.cambioMotor
+        }
+    }
 
     val pacientes by pacienteViewModel.pacientes.collectAsState()
     val paciente = pacientes.find { it.dniPaciente.toString() == formState.dniPaciente }
@@ -54,13 +71,10 @@ fun MonitoreoScreen(
     val solicitantes by solicitanteViewModel.solicitantes.collectAsState()
     val lugares by lugarViewModel.lugares.collectAsState()
     val patologias by patologiaViewModel.patologias.collectAsState()
+    val equipos by equipoViewModel.equipos.collectAsState()
 
-
-    //Persistencia
     fun saveMonitoreo() {
         val hoy = LocalDate.now()
-
-        // Validar fechas
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val fechasValidas = try {
             val f1 = LocalDate.parse(formState.fechaRealizado, formatter)
@@ -76,18 +90,13 @@ fun MonitoreoScreen(
             return
         }
 
-        // Verificar existencia del paciente
         val pacienteExiste = pacientes.any { it.dniPaciente.toString() == formState.dniPaciente }
         if (!pacienteExiste) {
             Toast.makeText(context, "Debes agregar un paciente válido antes de guardar", Toast.LENGTH_LONG).show()
             return
         }
 
-        // Generar nuevo nroRegistro
-        val nroNuevo = viewModel.monitoreos.value.maxOfOrNull { it.nroRegistro }?.plus(1) ?: 1
-
-        val nuevo = Monitoreo(
-            nroRegistro = nroNuevo,
+        val monitoreoFinal = monitoreo?.copy(
             fechaRealizado = formState.fechaRealizado,
             fechaPresentado = formState.fechaPresentado.ifBlank { null },
             fechaCobrado = formState.fechaCobrado.ifBlank { null },
@@ -100,17 +109,44 @@ fun MonitoreoScreen(
             detalleAnestesia = formState.anestesia,
             complicacion = formState.complicacion,
             detalleComplicacion = formState.detalleComplicacion,
-            cambioMotor = formState.cambioMotor
+            cambioMotor = formState.cambioMotor,
+            idEquipo = if (formState.selectedEquipoId != -1) formState.selectedEquipoId else null
+        ) ?: Monitoreo(
+            nroRegistro = viewModel.monitoreos.value.maxOfOrNull { it.nroRegistro }?.plus(1) ?: 1,
+            fechaRealizado = formState.fechaRealizado,
+            fechaPresentado = formState.fechaPresentado.ifBlank { null },
+            fechaCobrado = formState.fechaCobrado.ifBlank { null },
+            dniPaciente = formState.dniPaciente.toInt(),
+            idMedico = formState.selectedMedicoId,
+            idTecnico = formState.selectedTecnicoId,
+            idLugar = formState.selectedLugarId,
+            idPatologia = formState.selectedPatologiaId,
+            idSolicitante = formState.selectedSolicitanteId,
+            detalleAnestesia = formState.anestesia,
+            complicacion = formState.complicacion,
+            detalleComplicacion = formState.detalleComplicacion,
+            cambioMotor = formState.cambioMotor,
+            idEquipo = if (formState.selectedEquipoId != -1) formState.selectedEquipoId else null
         )
 
-        viewModel.addMonitoreo(nuevo)
+        if (monitoreo != null) {
+            viewModel.updateMonitoreo(monitoreoFinal)
+        } else {
+            viewModel.addMonitoreo(monitoreoFinal)
+        }
+
         onSaveSuccess()
     }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Nuevo Monitoreo", style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        text = if (monitoreo != null) "Editar Monitoreo" else "Nuevo Monitoreo",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -119,7 +155,7 @@ fun MonitoreoScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton( onClick = { saveMonitoreo() }) {
+            FloatingActionButton(onClick = { saveMonitoreo() }) {
                 Icon(Icons.Default.Check, contentDescription = "Guardar")
             }
         }
@@ -214,7 +250,19 @@ fun MonitoreoScreen(
                 cambioMotor = formState.cambioMotor,
                 onCambioMotorChange = { formState.cambioMotor = it }
             )
+            EquipoSection(
+                equipos = equipos,
+                selectedEquipoId = formState.selectedEquipoId,
+                onEquipoSelected = { formState.selectedEquipoId = it },
+                onAddEquipo = {
+                    formState.showDialogTipo = "Equipo"
+                    formState.setCamposDialog("Número", "Descripción")
+                }
+            )
+
+            Spacer(modifier = Modifier.width(128.dp))
         }
+
         if (formState.showDialogTipo.isNotEmpty()) {
             SimpleInputDialog(
                 title = "Nuevo ${formState.showDialogTipo}",
@@ -260,6 +308,12 @@ fun MonitoreoScreen(
                         "Patología" -> {
                             patologiaViewModel.addPatologia(
                                 nombre = formState.camposDialog[0].second.value
+                            )
+                        }
+                        "Equipo" -> {
+                            equipoViewModel.addEquipo(
+                                numero = formState.camposDialog[0].second.value,
+                                descripcion = formState.camposDialog[1].second.value
                             )
                         }
                     }

@@ -3,6 +3,7 @@ package com.example.mambappv2.data.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
 
 @Entity(tableName = "monitoreos")
 data class Monitoreo(
@@ -40,6 +41,9 @@ data class Monitoreo(
     @ColumnInfo(name = "idSolicitante")
     val idSolicitante: Int,
 
+    @ColumnInfo(name = "idEquipo")
+    val idEquipo: Int? = null,
+
     @ColumnInfo(name = "detalleAnestesia")
     val detalleAnestesia: String = "",
 
@@ -51,4 +55,4 @@ data class Monitoreo(
 
     @ColumnInfo(name = "cambioMotor")
     val cambioMotor: String = ""
-)
+) : Serializable

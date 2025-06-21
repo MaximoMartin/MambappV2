@@ -14,9 +14,10 @@ import com.example.mambappv2.data.entities.*
         Lugar::class,
         Patologia::class,
         Solicitante::class,
-        Monitoreo::class
+        Monitoreo::class,
+        Equipo::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,5 +27,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun lugarDao(): LugarDao
     abstract fun patologiaDao(): PatologiaDao
     abstract fun solicitanteDao(): SolicitanteDao
+    abstract fun equipoDao(): EquipoDao
     abstract fun monitoreoDao(): MonitoreoDao
 }

@@ -12,7 +12,9 @@ class AppContainer(context: Context) {
         context.applicationContext,
         AppDatabase::class.java,
         "mambapp_db"
-    ).build()
+    )
+        .fallbackToDestructiveMigration() // TODO Eliminar esta linea para produccion.
+        .build()
 
     val pacienteRepository = PacienteRepository(database.pacienteDao())
     val monitoreoRepository = MonitoreoRepository(database.monitoreoDao())
@@ -21,4 +23,5 @@ class AppContainer(context: Context) {
     val tecnicoRepository = TecnicoRepository(database.tecnicoDao())
     val solicitanteRepository = SolicitanteRepository(database.solicitanteDao())
     val patologiaRepository = PatologiaRepository(database.patologiaDao())
+    val equipoRepository by lazy { EquipoRepository(database.equipoDao()) }
 }
