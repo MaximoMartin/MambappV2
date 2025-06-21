@@ -10,6 +10,14 @@ import androidx.navigation.compose.*
 import com.example.mambappv2.data.entities.Monitoreo
 import com.example.mambappv2.navigation.NavigationRoutes
 import com.example.mambappv2.ui.screens.*
+import com.example.mambappv2.ui.screens.resources.ResourceMenuScreen
+import com.example.mambappv2.ui.screens.resources.equipo.EquipoListScreen
+import com.example.mambappv2.ui.screens.resources.lugar.LugarListScreen
+import com.example.mambappv2.ui.screens.resources.medico.MedicoListScreen
+import com.example.mambappv2.ui.screens.resources.paciente.PacienteListScreen
+import com.example.mambappv2.ui.screens.resources.patologia.PatologiaListScreen
+import com.example.mambappv2.ui.screens.resources.solicitante.SolicitanteListScreen
+import com.example.mambappv2.ui.screens.resources.tecnico.TecnicoListScreen
 import com.example.mambappv2.ui.theme.MambAppV2Theme
 import com.example.mambappv2.viewmodel.*
 import com.example.mambappv2.di.AppContainer
@@ -36,20 +44,18 @@ class MainActivity : ComponentActivity() {
                 val solicitanteVM = viewModel { SolicitanteViewModel(appContainer.solicitanteRepository) }
                 val equipoVM = viewModel { EquipoViewModel(appContainer.equipoRepository) }
 
-                NavHost(
-                    navController = navController,
-                    startDestination = NavigationRoutes.Home.route
-                ) {
+                NavHost(navController = navController, startDestination = NavigationRoutes.Home.route) {
 
                     // Home
                     composable(NavigationRoutes.Home.route) {
                         HomeScreen(
                             onNavigateToNew = { navController.navigate(NavigationRoutes.Form.route) },
-                            onNavigateToList = { navController.navigate(NavigationRoutes.List.route) }
+                            onNavigateToList = { navController.navigate(NavigationRoutes.List.route) },
+                            onNavigateToResources = { navController.navigate(NavigationRoutes.ResourceMenu.route) }
                         )
                     }
 
-                    // Nuevo monitoreo
+                    // Formulario: nuevo monitoreo
                     composable(NavigationRoutes.Form.route) {
                         MonitoreoScreen(
                             monitoreo = null,
@@ -66,11 +72,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // Edición de monitoreo
+                    // Formulario: editar monitoreo
                     composable(NavigationRoutes.FormEdit.route) {
                         val monitoreoEdit = navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.get<Monitoreo>("editarMonitoreo")
+                            ?.savedStateHandle?.get<Monitoreo>("editarMonitoreo")
 
                         MonitoreoScreen(
                             monitoreo = monitoreoEdit,
@@ -90,8 +95,7 @@ class MainActivity : ComponentActivity() {
                     // Detalle de monitoreo
                     composable(NavigationRoutes.Detail.route) {
                         val monitoreo = navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.get<Monitoreo>("monitoreo")
+                            ?.savedStateHandle?.get<Monitoreo>("monitoreo")
 
                         DetailScreen(
                             monitoreo = monitoreo,
@@ -100,13 +104,12 @@ class MainActivity : ComponentActivity() {
                             medicoViewModel = medicoVM,
                             tecnicoViewModel = tecnicoVM,
                             solicitanteViewModel = solicitanteVM,
-                            monitoreoViewModel = monitoreoVM,
                             pacienteViewModel = pacienteVM,
                             equipoViewModel = equipoVM,
+                            monitoreoViewModel = monitoreoVM,
                             onBack = { navController.popBackStack() },
-                            onEdit = { selected ->
-                                navController.currentBackStackEntry?.savedStateHandle
-                                    ?.set("editarMonitoreo", selected)
+                            onEdit = {
+                                navController.currentBackStackEntry?.savedStateHandle?.set("editarMonitoreo", it)
                                 navController.navigate(NavigationRoutes.FormEdit.route)
                             }
                         )
@@ -119,6 +122,34 @@ class MainActivity : ComponentActivity() {
                             lugarViewModel = lugarVM,
                             navController = navController
                         )
+                    }
+
+                    // Menú de selección de recursos
+                    composable(NavigationRoutes.ResourceMenu.route) {
+                        ResourceMenuScreen(navController = navController)
+                    }
+
+                    // Pantallas de listado por entidad
+                    composable(NavigationRoutes.PacienteList.route) {
+                        PacienteListScreen(navController = navController, viewModel = pacienteVM)
+                    }
+                    composable(NavigationRoutes.MedicoList.route) {
+                        MedicoListScreen(navController = navController, viewModel = medicoVM)
+                    }
+                    composable(NavigationRoutes.TecnicoList.route) {
+                        TecnicoListScreen(navController = navController, viewModel = tecnicoVM)
+                    }
+                    composable(NavigationRoutes.SolicitanteList.route) {
+                        SolicitanteListScreen(navController = navController, viewModel = solicitanteVM)
+                    }
+                    composable(NavigationRoutes.LugarList.route) {
+                        LugarListScreen(navController = navController, viewModel = lugarVM)
+                    }
+                    composable(NavigationRoutes.PatologiaList.route) {
+                        PatologiaListScreen(navController = navController, viewModel = patologiaVM)
+                    }
+                    composable(NavigationRoutes.EquipoList.route) {
+                        EquipoListScreen(navController = navController, viewModel = equipoVM)
                     }
                 }
             }

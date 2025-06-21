@@ -16,4 +16,14 @@ sealed class NavigationRoutes(val route: String) {
 
     // Detalle
     object Detail : NavigationRoutes("detail")
+
+    // Recursos
+    object ResourceMenu : NavigationRoutes("resource_menu")
+    object PacienteList : NavigationRoutes("paciente_list")
+    object MedicoList : NavigationRoutes("medico_list")
+    object TecnicoList : NavigationRoutes("tecnico_list")
+    object SolicitanteList : NavigationRoutes("solicitante_list")
+    object LugarList : NavigationRoutes("lugar_list")
+    object PatologiaList : NavigationRoutes("patologia_list")
+    object EquipoList : NavigationRoutes("equipo_list")
 }

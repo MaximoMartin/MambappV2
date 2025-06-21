@@ -11,20 +11,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.mambappv2.navigation.NavigationRoutes
 import com.example.mambappv2.ui.screens.resources.ResourceType.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResourceMenuScreen(
-    onBack: () -> Unit,
-    onNavigateTo: (ResourceType) -> Unit
+    navController: NavController
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Gestión de Recursos", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 }
@@ -43,13 +44,13 @@ fun ResourceMenuScreen(
                 fontWeight = FontWeight.Medium
             )
 
-            ResourceMenuItem(Paciente, onNavigateTo)
-            ResourceMenuItem(Medico, onNavigateTo)
-            ResourceMenuItem(Tecnico, onNavigateTo)
-            ResourceMenuItem(Solicitante, onNavigateTo)
-            ResourceMenuItem(Lugar, onNavigateTo)
-            ResourceMenuItem(Patologia, onNavigateTo)
-            ResourceMenuItem(Equipo, onNavigateTo)
+            ResourceMenuItem(Paciente) { navController.navigate(NavigationRoutes.PacienteList.route) }
+            ResourceMenuItem(Medico) { navController.navigate(NavigationRoutes.MedicoList.route) }
+            ResourceMenuItem(Tecnico) { navController.navigate(NavigationRoutes.TecnicoList.route) }
+            ResourceMenuItem(Solicitante) { navController.navigate(NavigationRoutes.SolicitanteList.route) }
+            ResourceMenuItem(Lugar) { navController.navigate(NavigationRoutes.LugarList.route) }
+            ResourceMenuItem(Patologia) { navController.navigate(NavigationRoutes.PatologiaList.route) }
+            ResourceMenuItem(Equipo) { navController.navigate(NavigationRoutes.EquipoList.route) }
         }
     }
 }
@@ -57,12 +58,12 @@ fun ResourceMenuScreen(
 @Composable
 fun ResourceMenuItem(
     type: ResourceType,
-    onClick: (ResourceType) -> Unit
+    onClick: () -> Unit
 ) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick(type) }
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier

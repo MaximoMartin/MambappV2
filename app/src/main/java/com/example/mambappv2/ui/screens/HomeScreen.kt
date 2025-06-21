@@ -1,4 +1,3 @@
-// HomeScreen.kt
 package com.example.mambappv2.ui.screens
 
 import androidx.compose.animation.core.*
@@ -12,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -21,11 +19,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 @Composable
 fun HomeScreen(
     onNavigateToNew: () -> Unit,
-    onNavigateToList: () -> Unit
+    onNavigateToList: () -> Unit,
+    onNavigateToResources: () -> Unit
 ) {
     val isDarkMode = isSystemInDarkTheme()
 
-    // Transición animada suave que va y vuelve
     val transition = rememberInfiniteTransition(label = "gradient_animation")
     val offset by transition.animateFloat(
         initialValue = -1000f,
@@ -38,9 +36,9 @@ fun HomeScreen(
     )
 
     val gradientColors = if (isDarkMode) {
-        listOf(Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF0D47A1)) // simétrico
+        listOf(Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF0D47A1))
     } else {
-        listOf(Color(0xFFB2EBF2), Color(0xFF80DEEA), Color(0xFFB2EBF2)) // simétrico
+        listOf(Color(0xFFB2EBF2), Color(0xFF80DEEA), Color(0xFFB2EBF2))
     }
 
     val gradientBrush = Brush.linearGradient(
@@ -76,6 +74,7 @@ fun HomeScreen(
             ) {
                 ActionButton(text = "Nuevo Monitoreo", isDark = isDarkMode, onClick = onNavigateToNew)
                 ActionButton(text = "Ver Registros", isDark = isDarkMode, onClick = onNavigateToList)
+                ActionButton(text = "Gestionar Recursos", isDark = isDarkMode, onClick = onNavigateToResources)
             }
         }
     }
