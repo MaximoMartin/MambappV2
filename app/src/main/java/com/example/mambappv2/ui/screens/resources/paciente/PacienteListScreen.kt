@@ -27,6 +27,9 @@ fun PacienteListScreen(
     val showDialog = remember { mutableStateOf(false) }
     val editingPaciente = remember { mutableStateOf<Paciente?>(null) }
 
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val pacienteToDelete = remember { mutableStateOf<Paciente?>(null) }
+
     val campos = remember {
         mutableStateListOf(
             "DNI" to mutableStateOf(""),
@@ -91,7 +94,10 @@ fun PacienteListScreen(
                             resetCampos(paciente)
                             showDialog.value = true
                         },
-                        onDelete = { viewModel.deletePaciente(paciente) }
+                        onDelete = {
+                            pacienteToDelete.value = paciente
+                            showConfirmDelete.value = true
+                        }
                     )
                 }
             }
@@ -126,6 +132,29 @@ fun PacienteListScreen(
                 }
             )
         }
+
+        if (showConfirmDelete.value && pacienteToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar paciente?") },
+                text = { Text("Esta acción no se puede deshacer y afectara a los registros creados.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            pacienteToDelete.value?.let { viewModel.deletePaciente(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -147,9 +176,12 @@ fun PacienteItem(
                 OutlinedButton(onClick = onEdit) {
                     Text("Editar")
                 }
-                OutlinedButton(onClick = onDelete, colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )) {
+                OutlinedButton(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
                     Text("Eliminar")
                 }
             }

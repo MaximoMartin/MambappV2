@@ -1,13 +1,11 @@
+// MedicoListScreen.kt
 package com.example.mambappv2.ui.screens.resources.medico
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +25,9 @@ fun MedicoListScreen(
     val medicos by viewModel.medicos.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val editingMedico = remember { mutableStateOf<Medico?>(null) }
+
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val medicoToDelete = remember { mutableStateOf<Medico?>(null) }
 
     var nombre by remember { mutableStateOf(TextFieldValue()) }
     var apellido by remember { mutableStateOf(TextFieldValue()) }
@@ -90,7 +91,10 @@ fun MedicoListScreen(
                                 }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Editar")
                                 }
-                                IconButton(onClick = { viewModel.deleteMedico(medico) }) {
+                                IconButton(onClick = {
+                                    medicoToDelete.value = medico
+                                    showConfirmDelete.value = true
+                                }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
                             }
@@ -139,6 +143,29 @@ fun MedicoListScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmDelete.value && medicoToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar médico?") },
+                text = { Text("Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            medicoToDelete.value?.let { viewModel.deleteMedico(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
                         Text("Cancelar")
                     }
                 }

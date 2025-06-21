@@ -1,3 +1,4 @@
+// SolicitanteListScreen.kt
 package com.example.mambappv2.ui.screens.resources.solicitante
 
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,9 @@ fun SolicitanteListScreen(
     val solicitantes by viewModel.solicitantes.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val editing = remember { mutableStateOf<Solicitante?>(null) }
+
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val solicitanteToDelete = remember { mutableStateOf<Solicitante?>(null) }
 
     var nombre by remember { mutableStateOf(TextFieldValue()) }
     var apellido by remember { mutableStateOf(TextFieldValue()) }
@@ -87,7 +91,10 @@ fun SolicitanteListScreen(
                                 }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Editar")
                                 }
-                                IconButton(onClick = { viewModel.deleteSolicitante(solicitante) }) {
+                                IconButton(onClick = {
+                                    solicitanteToDelete.value = solicitante
+                                    showConfirmDelete.value = true
+                                }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
                             }
@@ -136,6 +143,29 @@ fun SolicitanteListScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmDelete.value && solicitanteToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar solicitante?") },
+                text = { Text("Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            solicitanteToDelete.value?.let { viewModel.deleteSolicitante(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
                         Text("Cancelar")
                     }
                 }

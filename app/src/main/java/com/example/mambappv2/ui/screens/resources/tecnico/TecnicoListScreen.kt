@@ -1,3 +1,4 @@
+// TecnicoListScreen.kt
 package com.example.mambappv2.ui.screens.resources.tecnico
 
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,9 @@ fun TecnicoListScreen(
     val tecnicos by viewModel.tecnicos.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val editingTecnico = remember { mutableStateOf<Tecnico?>(null) }
+
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val tecnicoToDelete = remember { mutableStateOf<Tecnico?>(null) }
 
     var nombre by remember { mutableStateOf(TextFieldValue()) }
     var apellido by remember { mutableStateOf(TextFieldValue()) }
@@ -87,7 +91,10 @@ fun TecnicoListScreen(
                                 }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Editar")
                                 }
-                                IconButton(onClick = { viewModel.deleteTecnico(tecnico) }) {
+                                IconButton(onClick = {
+                                    tecnicoToDelete.value = tecnico
+                                    showConfirmDelete.value = true
+                                }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
                             }
@@ -136,6 +143,29 @@ fun TecnicoListScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmDelete.value && tecnicoToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar técnico?") },
+                text = { Text("Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            tecnicoToDelete.value?.let { viewModel.deleteTecnico(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
                         Text("Cancelar")
                     }
                 }

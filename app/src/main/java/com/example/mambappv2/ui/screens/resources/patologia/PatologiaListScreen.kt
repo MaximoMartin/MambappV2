@@ -1,3 +1,4 @@
+// PatologiaListScreen.kt
 package com.example.mambappv2.ui.screens.resources.patologia
 
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,9 @@ fun PatologiaListScreen(
     val patologias by viewModel.patologias.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val editingPatologia = remember { mutableStateOf<Patologia?>(null) }
+
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val patologiaToDelete = remember { mutableStateOf<Patologia?>(null) }
 
     var nombre by remember { mutableStateOf(TextFieldValue()) }
 
@@ -85,7 +89,10 @@ fun PatologiaListScreen(
                                 }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Editar")
                                 }
-                                IconButton(onClick = { viewModel.deletePatologia(patologia) }) {
+                                IconButton(onClick = {
+                                    patologiaToDelete.value = patologia
+                                    showConfirmDelete.value = true
+                                }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
                             }
@@ -127,6 +134,29 @@ fun PatologiaListScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmDelete.value && patologiaToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar patología?") },
+                text = { Text("Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            patologiaToDelete.value?.let { viewModel.deletePatologia(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
                         Text("Cancelar")
                     }
                 }

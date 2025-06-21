@@ -1,3 +1,4 @@
+// LugarListScreen.kt
 package com.example.mambappv2.ui.screens.resources.lugar
 
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,9 @@ fun LugarListScreen(
     val lugares by viewModel.lugares.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val editingLugar = remember { mutableStateOf<Lugar?>(null) }
+
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val lugarToDelete = remember { mutableStateOf<Lugar?>(null) }
 
     var nombre by remember { mutableStateOf(TextFieldValue()) }
     var provincia by remember { mutableStateOf(TextFieldValue()) }
@@ -87,7 +91,10 @@ fun LugarListScreen(
                                 }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Editar")
                                 }
-                                IconButton(onClick = { viewModel.deleteLugar(lugar) }) {
+                                IconButton(onClick = {
+                                    lugarToDelete.value = lugar
+                                    showConfirmDelete.value = true
+                                }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
                             }
@@ -136,6 +143,29 @@ fun LugarListScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmDelete.value && lugarToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar lugar?") },
+                text = { Text("Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            lugarToDelete.value?.let { viewModel.deleteLugar(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
                         Text("Cancelar")
                     }
                 }

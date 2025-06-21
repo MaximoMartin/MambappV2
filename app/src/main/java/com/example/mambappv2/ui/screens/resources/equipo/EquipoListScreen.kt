@@ -1,3 +1,4 @@
+// EquipoListScreen.kt
 package com.example.mambappv2.ui.screens.resources.equipo
 
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,9 @@ fun EquipoListScreen(
     val equipos by viewModel.equipos.collectAsState()
     val showDialog = remember { mutableStateOf(false) }
     val editingEquipo = remember { mutableStateOf<Equipo?>(null) }
+
+    val showConfirmDelete = remember { mutableStateOf(false) }
+    val equipoToDelete = remember { mutableStateOf<Equipo?>(null) }
 
     var numero by remember { mutableStateOf(TextFieldValue()) }
     var descripcion by remember { mutableStateOf(TextFieldValue()) }
@@ -90,7 +94,10 @@ fun EquipoListScreen(
                                 }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Editar")
                                 }
-                                IconButton(onClick = { viewModel.deleteEquipo(equipo) }) {
+                                IconButton(onClick = {
+                                    equipoToDelete.value = equipo
+                                    showConfirmDelete.value = true
+                                }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
                             }
@@ -144,6 +151,29 @@ fun EquipoListScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmDelete.value && equipoToDelete.value != null) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDelete.value = false },
+                title = { Text("¿Eliminar equipo?") },
+                text = { Text("Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            equipoToDelete.value?.let { viewModel.deleteEquipo(it) }
+                            showConfirmDelete.value = false
+                        }
+                    ) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDelete.value = false }) {
                         Text("Cancelar")
                     }
                 }
