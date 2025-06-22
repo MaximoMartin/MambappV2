@@ -1,3 +1,4 @@
+// MonitoreoRepository.kt
 package com.example.mambappv2.data.repository
 
 import com.example.mambappv2.data.dao.MonitoreoDao
@@ -8,6 +9,8 @@ class MonitoreoRepository(
     private val monitoreoDao: MonitoreoDao
 ) {
     fun getAllMonitoreos(): Flow<List<Monitoreo>> = monitoreoDao.getAllMonitoreos()
+
+    fun getMonitoreoById(id: Int): Flow<Monitoreo?> = monitoreoDao.getMonitoreoById(id)
 
     suspend fun insertMonitoreo(monitoreo: Monitoreo) = monitoreoDao.insertMonitoreo(monitoreo)
 

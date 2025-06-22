@@ -1,6 +1,7 @@
 // DetailScreen.kt
 package com.example.mambappv2.ui.screens
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -12,12 +13,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.mambappv2.data.entities.Monitoreo
 import com.example.mambappv2.viewmodel.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
+@SuppressLint("RememberReturnType")
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -34,6 +36,12 @@ fun DetailScreen(
     onBack: () -> Unit,
     onEdit: (Monitoreo) -> Unit
 ) {
+    val monitoreoId = monitoreo?.id
+    val monitoreoState by remember(monitoreoId) {
+        monitoreoId?.let { monitoreoViewModel.getMonitoreoById(it) }
+            ?: MutableStateFlow(null)
+    }.collectAsState()
+
     val lugares by lugarViewModel.lugares.collectAsState()
     val patologias by patologiaViewModel.patologias.collectAsState()
     val medicos by medicoViewModel.medicos.collectAsState()
@@ -42,44 +50,47 @@ fun DetailScreen(
     val pacientes by pacienteViewModel.pacientes.collectAsState()
     val equipos by equipoViewModel.equipos.collectAsState()
 
+    val monitoreoReal = monitoreoState
 
-    val equipo = equipos.find { it.id == monitoreo?.idEquipo }?.let { "Equipo Nº${it.numero} — ${it.descripcion}" }
-        ?: monitoreo?.equipoSnapshot ?: "No asignado"
+    val equipo = equipos.find { it.id == monitoreoReal?.idEquipo }
+        ?.let { "Equipo Nº${it.numero} — ${it.descripcion}" }
+        ?: monitoreoReal?.equipoSnapshot ?: "No asignado"
 
-    val paciente = pacientes.find { it.dniPaciente == monitoreo?.dniPaciente }
+    val paciente = pacientes.find { it.dniPaciente == monitoreoReal?.dniPaciente }
 
-    val lugar = lugares.find { it.id == monitoreo?.idLugar }?.let { "${it.nombre}, ${it.provincia}" }
-        ?: monitoreo?.lugarSnapshot ?: "Desconocido"
+    val lugar = lugares.find { it.id == monitoreoReal?.idLugar }
+        ?.let { "${it.nombre}, ${it.provincia}" }
+        ?: monitoreoReal?.lugarSnapshot ?: "Desconocido"
 
-    val patologia = patologias.find { it.id == monitoreo?.idPatologia }?.nombre
-        ?: monitoreo?.patologiaSnapshot ?: "Desconocida"
+    val patologia = patologias.find { it.id == monitoreoReal?.idPatologia }?.nombre
+        ?: monitoreoReal?.patologiaSnapshot ?: "Desconocida"
 
-    val medico = medicos.find { it.id == monitoreo?.idMedico }?.let { "${it.nombre} ${it.apellido}" }
-        ?: monitoreo?.medicoSnapshot ?: "No asignado"
+    val medico = medicos.find { it.id == monitoreoReal?.idMedico }
+        ?.let { "${it.nombre} ${it.apellido}" }
+        ?: monitoreoReal?.medicoSnapshot ?: "No asignado"
 
-    val tecnico = tecnicos.find { it.id == monitoreo?.idTecnico }?.let { "${it.nombre} ${it.apellido}" }
-        ?: monitoreo?.tecnicoSnapshot ?: "No asignado"
+    val tecnico = tecnicos.find { it.id == monitoreoReal?.idTecnico }
+        ?.let { "${it.nombre} ${it.apellido}" }
+        ?: monitoreoReal?.tecnicoSnapshot ?: "No asignado"
 
-    val solicitante = solicitantes.find { it.id == monitoreo?.idSolicitante }?.let { "${it.nombre} ${it.apellido}" }
-        ?: monitoreo?.solicitanteSnapshot ?: "No asignado"
-
+    val solicitante = solicitantes.find { it.id == monitoreoReal?.idSolicitante }
+        ?.let { "${it.nombre} ${it.apellido}" }
+        ?: monitoreoReal?.solicitanteSnapshot ?: "No asignado"
 
     val openDialog = remember { mutableStateOf(false) }
+    val showEditWarningDialog = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
 
-    val entidadFaltante = monitoreo != null && listOf(
-        medicos.any { it.id == monitoreo.idMedico },
-        tecnicos.any { it.id == monitoreo.idTecnico },
-        lugares.any { it.id == monitoreo.idLugar },
-        patologias.any { it.id == monitoreo.idPatologia },
-        solicitantes.any { it.id == monitoreo.idSolicitante },
-        equipos.any { it.id == monitoreo.idEquipo || monitoreo.idEquipo == null },
-        pacientes.any { it.dniPaciente == monitoreo.dniPaciente }
+    val entidadFaltante = monitoreoReal != null && listOf(
+        medicos.any { it.id == monitoreoReal.idMedico },
+        tecnicos.any { it.id == monitoreoReal.idTecnico },
+        lugares.any { it.id == monitoreoReal.idLugar },
+        patologias.any { it.id == monitoreoReal.idPatologia },
+        solicitantes.any { it.id == monitoreoReal.idSolicitante },
+        equipos.any { it.id == monitoreoReal.idEquipo || monitoreoReal.idEquipo == null },
+        pacientes.any { it.dniPaciente == monitoreoReal.dniPaciente }
     ).contains(false)
-
-    val showEditWarningDialog = remember { mutableStateOf(false) }
-
 
     Scaffold(
         topBar = {
@@ -95,7 +106,7 @@ fun DetailScreen(
                         if (entidadFaltante) {
                             showEditWarningDialog.value = true
                         } else {
-                            monitoreo?.let(onEdit)
+                            monitoreoReal?.let(onEdit)
                         }
                     }) {
                         Icon(Icons.Default.Edit, contentDescription = "Editar")
@@ -106,11 +117,9 @@ fun DetailScreen(
                 }
             )
         },
-        snackbarHost = {
-            SnackbarHost(snackBarHostState)
-        }
+        snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { padding ->
-        if (monitoreo == null) {
+        if (monitoreoReal == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -127,10 +136,10 @@ fun DetailScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DetailCard(title = "🧾 Registro #${monitoreo.nroRegistro}") {
-                    InfoLine("Fecha Realizado", monitoreo.fechaRealizado)
-                    InfoLine("Fecha Presentado", monitoreo.fechaPresentado ?: "No informada")
-                    InfoLine("Fecha Cobrado", monitoreo.fechaCobrado ?: "No informada")
+                DetailCard(title = "🧾 Registro #${monitoreoReal.nroRegistro}") {
+                    InfoLine("Fecha Realizado", monitoreoReal.fechaRealizado)
+                    InfoLine("Fecha Presentado", monitoreoReal.fechaPresentado ?: "No informada")
+                    InfoLine("Fecha Cobrado", monitoreoReal.fechaCobrado ?: "No informada")
                 }
 
                 DetailCard(title = "👤 Paciente") {
@@ -141,11 +150,11 @@ fun DetailScreen(
                         InfoLine("Edad", paciente.edad.toString())
                         InfoLine("Mutual", paciente.mutual)
                     } else {
-                        InfoLine("DNI", monitoreo?.dniPaciente?.toString() ?: "-")
-                        InfoLine("Nombre", monitoreo?.pacienteNombre ?: "Desconocido")
-                        InfoLine("Apellido", monitoreo?.pacienteApellido ?: "Desconocido")
-                        InfoLine("Edad", monitoreo?.pacienteEdad?.toString() ?: "-")
-                        InfoLine("Mutual", monitoreo?.pacienteMutual ?: "-")
+                        InfoLine("DNI", monitoreoReal.dniPaciente.toString())
+                        InfoLine("Nombre", monitoreoReal.pacienteNombre)
+                        InfoLine("Apellido", monitoreoReal.pacienteApellido)
+                        InfoLine("Edad", monitoreoReal.pacienteEdad.toString())
+                        InfoLine("Mutual", monitoreoReal.pacienteMutual)
                     }
                 }
 
@@ -162,15 +171,12 @@ fun DetailScreen(
                 }
 
                 DetailCard(title = "📝 Detalles Clínicos") {
-                    LabeledBlock(label = "Anestesia", value = monitoreo.detalleAnestesia)
-
-                    InfoLine("Complicación", if (monitoreo.complicacion) "Sí" else "No")
-
-                    if (monitoreo.complicacion) {
-                        LabeledBlock(label = "Detalle Complicación", value = monitoreo.detalleComplicacion)
+                    LabeledBlock("Anestesia", monitoreoReal.detalleAnestesia)
+                    InfoLine("Complicación", if (monitoreoReal.complicacion) "Sí" else "No")
+                    if (monitoreoReal.complicacion) {
+                        LabeledBlock("Detalle Complicación", monitoreoReal.detalleComplicacion)
                     }
-
-                    LabeledBlock(label = "Cambio de Motor", value = monitoreo.cambioMotor)
+                    LabeledBlock("Cambio de Motor", monitoreoReal.cambioMotor)
                 }
             }
         }
@@ -182,7 +188,7 @@ fun DetailScreen(
                 text = { Text("Esta acción no se puede deshacer.") },
                 confirmButton = {
                     TextButton(onClick = {
-                        monitoreo?.let {
+                        monitoreoReal?.let {
                             monitoreoViewModel.deleteMonitoreo(it)
                             scope.launch {
                                 snackBarHostState.showSnackbar("Monitoreo eliminado correctamente")
@@ -201,17 +207,18 @@ fun DetailScreen(
                 }
             )
         }
+
         if (showEditWarningDialog.value) {
             AlertDialog(
                 onDismissRequest = { showEditWarningDialog.value = false },
                 title = { Text("Editar monitoreo con datos eliminados") },
                 text = {
-                    Text("Este monitoreo contiene información de entidades que ya no existen (como médico, técnico, etc.). Al editarlo, deberás volver a seleccionar esos valores o se perderán los datos originales.")
+                    Text("Este monitoreo contiene información de entidades que ya no existen. Al editarlo, deberás volver a seleccionar esos valores o se perderán.")
                 },
                 confirmButton = {
                     TextButton(onClick = {
                         showEditWarningDialog.value = false
-                        monitoreo?.let(onEdit)
+                        monitoreoReal?.let(onEdit)
                     }) {
                         Text("Continuar")
                     }
@@ -227,7 +234,6 @@ fun DetailScreen(
         }
     }
 }
-
 @Composable
 fun DetailCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {

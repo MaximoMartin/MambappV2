@@ -17,6 +17,9 @@ class MonitoreoViewModel(
     val monitoreos: StateFlow<List<Monitoreo>> = repository.getAllMonitoreos()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    fun getMonitoreoById(id: Int): StateFlow<Monitoreo?> =
+        repository.getMonitoreoById(id)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun addMonitoreo(monitoreo: Monitoreo) {
         viewModelScope.launch {

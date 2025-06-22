@@ -1,3 +1,4 @@
+// MonitoreoDao.kt
 package com.example.mambappv2.data.dao
 
 import androidx.room.*
@@ -11,7 +12,7 @@ interface MonitoreoDao {
     fun getAllMonitoreos(): Flow<List<Monitoreo>>
 
     @Query("SELECT * FROM monitoreos WHERE id = :id LIMIT 1")
-    suspend fun getMonitoreoById(id: Int): Monitoreo?
+    fun getMonitoreoById(id: Int): Flow<Monitoreo?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMonitoreo(monitoreo: Monitoreo)
@@ -21,4 +22,5 @@ interface MonitoreoDao {
 
     @Delete
     suspend fun deleteMonitoreo(monitoreo: Monitoreo)
+
 }
