@@ -1,3 +1,4 @@
+// SimpleInputDialog.kt
 package com.example.mambappv2.ui.components.dialogs
 
 import androidx.compose.foundation.layout.*

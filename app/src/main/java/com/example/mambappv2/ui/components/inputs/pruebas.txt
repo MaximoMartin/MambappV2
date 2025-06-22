@@ -1,66 +1,20 @@
-// DateInputField.kt
-package com.example.mambappv2.ui.components.inputs
+Poder facilmente poner la fecha de hoy en un monitoreo para el cobrado/ presentado con la seleccion del mismo
+sin necesidad de ir a la pantalla de edicion. Como un shortcut.
 
-import android.app.DatePickerDialog
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun DateInputField(
-    label: String,
-    date: String,
-    onDateChange: (String) -> Unit
-) {
-    val context = LocalContext.current
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val displayFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-    var showDialog by remember { mutableStateOf(false) }
+Prompt util por ahora:
+Necesito realizar dos distintas modificaciones a mi app que intervienen entre si en cuanto al desarrollo y lógica.
+Necesito que me ayudes a decidir cual desarrollar primero.
+1) Historial Inmodificable de los monitoreos (Principalmente) y entidades como Equipos, medicos, técnicos, solicitantes, patologías, pacientes y lugares.
+Con esto me refiero a que si una entidad de las nombradas se modifica en un momento, los monitoreos creados previos, no deben ser alterados y deben mostrar una 'Imagen' de lo que se cargo en principio. Es decir si yo cargo en el form que un monitoreo lo hizo el medico: 'Juan'. Por mas que en el futuro borre/elimine a juan de la entidad de medicos, aquel monitoreo debe mostrar la debida información de Juan.
+Esta lógica de guardado inmutable se deben hacer con todas las entidades pertenecientes a los monitoreos.
+Actualmente si el usuario crea un monitoreo y carga que 'Juan' lo realizo, si en el futuro luego de crear aquel monitoreo, el usuario borra a 'Juan' de los medicos, en el detalle del monitoreo saldrá como 'No asignado'. Esto ocurre lógicamente con todas las demás entidades.
+Con esta modificación a mi app se debe tener en cuenta todos los casos donde un usuario quiera modificar un monitoreo el cual contenga alguna entidad eliminada. Que se debe hacer en tal caso? Me imagino dos acciones posibles. Al momento de seleccionar la opción de editar en un monitoreo el cual contiene una entidad borrada, mostrar un mensaje de confirmación explicando que esa información de la entidad eliminada no se podrá mantener y al continuar con la edición se deberá llenar con campos que lo reemplacen. La segunda opción es que el formulario venga con esa info precargada y si no es modificado el campo con la entidad borrada en la edición, se mantenga exactamente como estaba permaneciendo esa imagen del monitoreo.
+Algo similar debe contemplar esta lógica en el caso de que alguna entidad sea editada luego de haberse usado en monitoreos. La información de la entidad EN EL MONITOREO no debe verse afectada. Y debe mostrarse la información que se cargo en el momento A menos que el usuario manualmente la edite.
 
-    if (showDialog) {
-        val initial = if (date.isNotBlank()) LocalDate.parse(date, formatter) else LocalDate.now()
-        val today = LocalDate.now()
+2) Agregar campos a las entidades Lugar, técnico, equipo, medico y realizar Calculos en base a estos nuevos campos. La app aparte de servir para crear el historial de monitoreos de manera conveniente con datos precargados, debe ser capaz de realizar los calculos para determinar la cantidad de dinero que va a cada profesional en base a ciertos parámetros especificados segun las elecciones de las entidades. No te dare ejemplos concretos de los cálculos, pero mas o menos es asi:
+Si un monitoreo se hace en Lugar A se cobran 10$, si se hace en lugar B se cobran 50$. Ese monto cobrado por el lugar se debe restar del tipo del equipo seleccionado, Si se uso Equipo 1, se resta 5$ si se uso equipo 2 se resta 15$, Cada técnico y medico tiene su propia tarifa por los servicios prestados que también se deben de restar del total. Estos cálculos deben ser exportados a modo de un recibo, factura como pdf o excel para luego ser corroborados por demás personas.
+Es IMPORTANTISIMO mantener un registro INMUTABLE de los monto cobrados y de las tarifas asignadas a las entidades.
 
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val selected = LocalDate.of(year, month + 1, dayOfMonth)
-                onDateChange(selected.format(formatter))
-                showDialog = false
-            },
-            initial.year,
-            initial.monthValue - 1,
-            initial.dayOfMonth
-        ).apply {
-            datePicker.maxDate = today.toEpochDay() * 24 * 60 * 60 * 1000
-        }.show()
-    }
-
-    OutlinedButton(
-        onClick = { showDialog = true },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(text = label, style = MaterialTheme.typography.labelMedium)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = if (date.isNotBlank())
-                    LocalDate.parse(date, formatter).format(displayFormatter)
-                else
-                    "Seleccionar",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
-}
+En resumen, 1) creamos el historial inmutable de los monitoreos contemplando todos los casos donde un usuario edite/elimine una entidad que se hayan usado en uno o varios monitoreos y que estas acciones no interfieran en los valores almacenados en los monitoreos.  Y si el usuario intenta editar un monitoreo donde puede comprometer la información cargada originalmente se tome la medida correcta para no perder/modificar información accidentalmente. 2) Creamos en las entidades ya existentes los nuevos campos necesarios para calcular los debidos montos resultantes de realizar un monitoreo. Que dinero va a quien y cuanto debemos cobrar. Y debemos mantener un registro y trazabilidad impecable ya que involucra el pago del trabajo de varios profesionales.

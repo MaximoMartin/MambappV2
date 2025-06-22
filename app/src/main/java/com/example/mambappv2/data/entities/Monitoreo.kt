@@ -1,3 +1,4 @@
+// Monitoreo.kt
 package com.example.mambappv2.data.entities
 
 import androidx.room.ColumnInfo
@@ -54,5 +55,37 @@ data class Monitoreo(
     val detalleComplicacion: String = "",
 
     @ColumnInfo(name = "cambioMotor")
-    val cambioMotor: String = ""
+    val cambioMotor: String = "",
+
+    // Campos snapshot inmutables
+    @ColumnInfo(name = "medicoSnapshot")
+    val medicoSnapshot: String = "",
+
+    @ColumnInfo(name = "tecnicoSnapshot")
+    val tecnicoSnapshot: String = "",
+
+    @ColumnInfo(name = "solicitanteSnapshot")
+    val solicitanteSnapshot: String = "",
+
+    @ColumnInfo(name = "lugarSnapshot")
+    val lugarSnapshot: String = "",
+
+    @ColumnInfo(name = "patologiaSnapshot")
+    val patologiaSnapshot: String = "",
+
+    @ColumnInfo(name = "equipoSnapshot")
+    val equipoSnapshot: String = "",
+
+    @ColumnInfo(name = "pacienteNombre")
+    val pacienteNombre: String = "",
+
+    @ColumnInfo(name = "pacienteApellido")
+    val pacienteApellido: String = "",
+
+    @ColumnInfo(name = "pacienteEdad")
+    val pacienteEdad: Int = 0,
+
+    @ColumnInfo(name = "pacienteMutual")
+    val pacienteMutual: String = ""
 ) : Serializable
+

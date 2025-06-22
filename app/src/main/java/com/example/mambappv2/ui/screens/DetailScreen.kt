@@ -44,17 +44,42 @@ fun DetailScreen(
 
 
     val equipo = equipos.find { it.id == monitoreo?.idEquipo }?.let { "Equipo Nº${it.numero} — ${it.descripcion}" }
-        ?: "No asignado"
+        ?: monitoreo?.equipoSnapshot ?: "No asignado"
+
     val paciente = pacientes.find { it.dniPaciente == monitoreo?.dniPaciente }
-    val lugar = lugares.find { it.id == monitoreo?.idLugar }?.let { "${it.nombre}, ${it.provincia}" } ?: "Desconocido"
-    val patologia = patologias.find { it.id == monitoreo?.idPatologia }?.nombre ?: "Desconocida"
-    val medico = medicos.find { it.id == monitoreo?.idMedico }?.let { "${it.nombre} ${it.apellido}" } ?: "No asignado"
-    val tecnico = tecnicos.find { it.id == monitoreo?.idTecnico }?.let { "${it.nombre} ${it.apellido}" } ?: "No asignado"
-    val solicitante = solicitantes.find { it.id == monitoreo?.idSolicitante }?.let { "${it.nombre} ${it.apellido}" } ?: "No asignado"
+
+    val lugar = lugares.find { it.id == monitoreo?.idLugar }?.let { "${it.nombre}, ${it.provincia}" }
+        ?: monitoreo?.lugarSnapshot ?: "Desconocido"
+
+    val patologia = patologias.find { it.id == monitoreo?.idPatologia }?.nombre
+        ?: monitoreo?.patologiaSnapshot ?: "Desconocida"
+
+    val medico = medicos.find { it.id == monitoreo?.idMedico }?.let { "${it.nombre} ${it.apellido}" }
+        ?: monitoreo?.medicoSnapshot ?: "No asignado"
+
+    val tecnico = tecnicos.find { it.id == monitoreo?.idTecnico }?.let { "${it.nombre} ${it.apellido}" }
+        ?: monitoreo?.tecnicoSnapshot ?: "No asignado"
+
+    val solicitante = solicitantes.find { it.id == monitoreo?.idSolicitante }?.let { "${it.nombre} ${it.apellido}" }
+        ?: monitoreo?.solicitanteSnapshot ?: "No asignado"
+
 
     val openDialog = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
+
+    val entidadFaltante = monitoreo != null && listOf(
+        medicos.any { it.id == monitoreo.idMedico },
+        tecnicos.any { it.id == monitoreo.idTecnico },
+        lugares.any { it.id == monitoreo.idLugar },
+        patologias.any { it.id == monitoreo.idPatologia },
+        solicitantes.any { it.id == monitoreo.idSolicitante },
+        equipos.any { it.id == monitoreo.idEquipo || monitoreo.idEquipo == null },
+        pacientes.any { it.dniPaciente == monitoreo.dniPaciente }
+    ).contains(false)
+
+    val showEditWarningDialog = remember { mutableStateOf(false) }
+
 
     Scaffold(
         topBar = {
@@ -66,7 +91,13 @@ fun DetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { monitoreo?.let(onEdit) }) {
+                    IconButton(onClick = {
+                        if (entidadFaltante) {
+                            showEditWarningDialog.value = true
+                        } else {
+                            monitoreo?.let(onEdit)
+                        }
+                    }) {
                         Icon(Icons.Default.Edit, contentDescription = "Editar")
                     }
                     IconButton(onClick = { openDialog.value = true }) {
@@ -110,7 +141,11 @@ fun DetailScreen(
                         InfoLine("Edad", paciente.edad.toString())
                         InfoLine("Mutual", paciente.mutual)
                     } else {
-                        Text("Paciente no encontrado", color = MaterialTheme.colorScheme.error)
+                        InfoLine("DNI", monitoreo?.dniPaciente?.toString() ?: "-")
+                        InfoLine("Nombre", monitoreo?.pacienteNombre ?: "Desconocido")
+                        InfoLine("Apellido", monitoreo?.pacienteApellido ?: "Desconocido")
+                        InfoLine("Edad", monitoreo?.pacienteEdad?.toString() ?: "-")
+                        InfoLine("Mutual", monitoreo?.pacienteMutual ?: "-")
                     }
                 }
 
@@ -161,6 +196,30 @@ fun DetailScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { openDialog.value = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+        if (showEditWarningDialog.value) {
+            AlertDialog(
+                onDismissRequest = { showEditWarningDialog.value = false },
+                title = { Text("Editar monitoreo con datos eliminados") },
+                text = {
+                    Text("Este monitoreo contiene información de entidades que ya no existen (como médico, técnico, etc.). Al editarlo, deberás volver a seleccionar esos valores o se perderán los datos originales.")
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showEditWarningDialog.value = false
+                        monitoreo?.let(onEdit)
+                    }) {
+                        Text("Continuar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showEditWarningDialog.value = false
+                    }) {
                         Text("Cancelar")
                     }
                 }

@@ -1,3 +1,4 @@
+// MonitoreoScreen.kt
 package com.example.mambappv2.ui.screens
 
 import android.os.Build
@@ -96,6 +97,8 @@ fun MonitoreoScreen(
             return
         }
 
+        val paciente = pacientes.find { it.dniPaciente.toString() == formState.dniPaciente }
+
         val monitoreoFinal = monitoreo?.copy(
             fechaRealizado = formState.fechaRealizado,
             fechaPresentado = formState.fechaPresentado.ifBlank { null },
@@ -110,7 +113,57 @@ fun MonitoreoScreen(
             complicacion = formState.complicacion,
             detalleComplicacion = formState.detalleComplicacion,
             cambioMotor = formState.cambioMotor,
-            idEquipo = if (formState.selectedEquipoId != -1) formState.selectedEquipoId else null
+            idEquipo = if (formState.selectedEquipoId != -1) formState.selectedEquipoId else null,
+            // Snapshots: conservar si no se modificó el ID
+            medicoSnapshot = if (monitoreo.idMedico == formState.selectedMedicoId)
+                monitoreo.medicoSnapshot
+            else
+                medicos.find { it.id == formState.selectedMedicoId }?.let { "${it.nombre} ${it.apellido}" } ?: "Desconocido",
+
+            tecnicoSnapshot = if (monitoreo.idTecnico == formState.selectedTecnicoId)
+                monitoreo.tecnicoSnapshot
+            else
+                tecnicos.find { it.id == formState.selectedTecnicoId }?.let { "${it.nombre} ${it.apellido}" } ?: "Desconocido",
+
+            solicitanteSnapshot = if (monitoreo.idSolicitante == formState.selectedSolicitanteId)
+                monitoreo.solicitanteSnapshot
+            else
+                solicitantes.find { it.id == formState.selectedSolicitanteId }?.let { "${it.nombre} ${it.apellido}" } ?: "Desconocido",
+
+            lugarSnapshot = if (monitoreo.idLugar == formState.selectedLugarId)
+                monitoreo.lugarSnapshot
+            else
+                lugares.find { it.id == formState.selectedLugarId }?.let { "${it.nombre}, ${it.provincia}" } ?: "Desconocido",
+
+            patologiaSnapshot = if (monitoreo.idPatologia == formState.selectedPatologiaId)
+                monitoreo.patologiaSnapshot
+            else
+                patologias.find { it.id == formState.selectedPatologiaId }?.nombre ?: "Desconocido",
+
+            equipoSnapshot = if (monitoreo.idEquipo == formState.selectedEquipoId)
+                monitoreo.equipoSnapshot
+            else
+                equipos.find { it.id == formState.selectedEquipoId }?.let { "Equipo Nº${it.numero} — ${it.descripcion}" } ?: "No asignado",
+
+            pacienteNombre = if (monitoreo.dniPaciente.toString() == formState.dniPaciente)
+                monitoreo.pacienteNombre
+            else
+                paciente?.nombre ?: "",
+
+            pacienteApellido = if (monitoreo.dniPaciente.toString() == formState.dniPaciente)
+                monitoreo.pacienteApellido
+            else
+                paciente?.apellido ?: "",
+
+            pacienteEdad = if (monitoreo.dniPaciente.toString() == formState.dniPaciente)
+                monitoreo.pacienteEdad
+            else
+                paciente?.edad ?: 0,
+
+            pacienteMutual = if (monitoreo.dniPaciente.toString() == formState.dniPaciente)
+                monitoreo.pacienteMutual
+            else
+                paciente?.mutual ?: ""
         ) ?: Monitoreo(
             nroRegistro = viewModel.monitoreos.value.maxOfOrNull { it.nroRegistro }?.plus(1) ?: 1,
             fechaRealizado = formState.fechaRealizado,
@@ -126,7 +179,18 @@ fun MonitoreoScreen(
             complicacion = formState.complicacion,
             detalleComplicacion = formState.detalleComplicacion,
             cambioMotor = formState.cambioMotor,
-            idEquipo = if (formState.selectedEquipoId != -1) formState.selectedEquipoId else null
+            idEquipo = if (formState.selectedEquipoId != -1) formState.selectedEquipoId else null,
+            // Snapshots nuevos (solo en creación)
+            medicoSnapshot = medicos.find { it.id == formState.selectedMedicoId }?.let { "${it.nombre} ${it.apellido}" } ?: "Desconocido",
+            tecnicoSnapshot = tecnicos.find { it.id == formState.selectedTecnicoId }?.let { "${it.nombre} ${it.apellido}" } ?: "Desconocido",
+            solicitanteSnapshot = solicitantes.find { it.id == formState.selectedSolicitanteId }?.let { "${it.nombre} ${it.apellido}" } ?: "Desconocido",
+            lugarSnapshot = lugares.find { it.id == formState.selectedLugarId }?.let { "${it.nombre}, ${it.provincia}" } ?: "Desconocido",
+            patologiaSnapshot = patologias.find { it.id == formState.selectedPatologiaId }?.nombre ?: "Desconocido",
+            equipoSnapshot = equipos.find { it.id == formState.selectedEquipoId }?.let { "Equipo Nº${it.numero} — ${it.descripcion}" } ?: "No asignado",
+            pacienteNombre = paciente?.nombre ?: "",
+            pacienteApellido = paciente?.apellido ?: "",
+            pacienteEdad = paciente?.edad ?: 0,
+            pacienteMutual = paciente?.mutual ?: ""
         )
 
         if (monitoreo != null) {
@@ -137,6 +201,7 @@ fun MonitoreoScreen(
 
         onSaveSuccess()
     }
+
 
     Scaffold(
         topBar = {
