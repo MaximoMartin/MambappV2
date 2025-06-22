@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Equipo
 import com.example.mambappv2.viewmodel.EquipoViewModel
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +122,8 @@ fun EquipoListScreen(
                             onValueChange = { numero = it },
                             label = { Text("Número de Equipo") },
                             singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number) // ✅
                         )
                         OutlinedTextField(
                             value = descripcion,

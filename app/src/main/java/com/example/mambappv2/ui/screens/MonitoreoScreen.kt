@@ -61,6 +61,7 @@ fun MonitoreoScreen(
             formState.complicacion = it.complicacion
             formState.detalleComplicacion = it.detalleComplicacion
             formState.cambioMotor = it.cambioMotor
+            formState.selectedEquipoId = it.idEquipo ?: -1
         }
     }
 
