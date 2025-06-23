@@ -2,6 +2,7 @@ Poder facilmente poner la fecha de hoy en un monitoreo para el cobrado/ presenta
 sin necesidad de ir a la pantalla de edicion. Como un shortcut.
 
 Mostrar mensaje de errores en los forms.
+Sacar los viewModelFactory
 
 Prompt util por ahora:
 Necesito realizar dos distintas modificaciones a mi app que intervienen entre si en cuanto al desarrollo y lógica.
