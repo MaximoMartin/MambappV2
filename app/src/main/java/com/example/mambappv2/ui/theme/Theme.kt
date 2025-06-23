@@ -6,25 +6,49 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF00695C),
-    secondary = Color(0xFF00796B),
-    background = Color(0xFFF1F1F1),
-    surface = Color.White,
+    primary = MedicalTeal40,
+    secondary = HealthBlue,
+    tertiary = HealthGreen,
+    background = Color(0xFFFAFDFD),
+    surface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFFF1F8F8),
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onBackground = Color.Black,
-    onSurface = Color.Black
+    onTertiary = Color.White,
+    onBackground = MedicalDark40,
+    onSurface = MedicalDark40,
+    onSurfaceVariant = Color(0xFF6B7B7B),
+    primaryContainer = MedicalLightBlue80,
+    onPrimaryContainer = MedicalTeal40,
+    secondaryContainer = Color(0xFFE3F2FD),
+    onSecondaryContainer = MedicalBlue40,
+    error = ErrorRed,
+    onError = Color.White,
+    errorContainer = Color(0xFFFFEBEE),
+    onErrorContainer = ErrorRed
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF80CBC4),
-    secondary = Color(0xFF4DB6AC),
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
-    onBackground = Color.White,
-    onSurface = Color.White
+    primary = MedicalTeal80,
+    secondary = MedicalBlue80,
+    tertiary = MedicalGreen80,
+    background = Color(0xFF0E1414),
+    surface = Color(0xFF1A1F1F),
+    surfaceVariant = Color(0xFF232B2B),
+    onPrimary = MedicalDark40,
+    onSecondary = MedicalDark40,
+    onTertiary = MedicalDark40,
+    onBackground = Color(0xFFE8F4F4),
+    onSurface = Color(0xFFE8F4F4),
+    onSurfaceVariant = Color(0xFFB8C8C8),
+    primaryContainer = MedicalTeal40,
+    onPrimaryContainer = MedicalTeal80,
+    secondaryContainer = MedicalBlue40,
+    onSecondaryContainer = MedicalBlue80,
+    error = Color(0xFFFF8A80),
+    onError = MedicalDark40,
+    errorContainer = Color(0xFF5D1A1A),
+    onErrorContainer = Color(0xFFFF8A80)
 )
 
 @Composable

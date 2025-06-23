@@ -1,13 +1,13 @@
 // ProfesionalesSection.kt
 package com.example.mambappv2.ui.components.sections
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.example.mambappv2.data.entities.*
-import com.example.mambappv2.ui.components.EntityDropdown
-import com.example.mambappv2.ui.components.SectionHeader
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import com.example.mambappv2.data.entities.*
+import com.example.mambappv2.ui.components.ModernEntityDropdown
 
 @Composable
 fun ProfesionalesSection(
@@ -26,27 +26,30 @@ fun ProfesionalesSection(
     onSolicitanteSelected: (Int) -> Unit,
     onAddSolicitante: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeader("👨‍⚕️ Profesionales")
-
-        EntityDropdown(
-            label = "Médico",
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ModernEntityDropdown(
+            label = "Médico Responsable",
+            icon = Icons.Default.LocalHospital,
             options = medicos.map { "${it.nombre} ${it.apellido}" },
             selectedIndex = medicos.indexOfFirst { it.id == selectedMedicoId },
             onSelect = { onMedicoSelected(medicos[it].id) },
             onAddClick = onAddMedico
         )
 
-        EntityDropdown(
-            label = "Técnico",
+        ModernEntityDropdown(
+            label = "Técnico Asignado",
+            icon = Icons.Default.Engineering,
             options = tecnicos.map { "${it.nombre} ${it.apellido}" },
             selectedIndex = tecnicos.indexOfFirst { it.id == selectedTecnicoId },
             onSelect = { onTecnicoSelected(tecnicos[it].id) },
             onAddClick = onAddTecnico
         )
 
-        EntityDropdown(
-            label = "Solicitante",
+        ModernEntityDropdown(
+            label = "Médico Solicitante",
+            icon = Icons.Default.PersonSearch,
             options = solicitantes.map { "${it.nombre} ${it.apellido}" },
             selectedIndex = solicitantes.indexOfFirst { it.id == selectedSolicitanteId },
             onSelect = { onSolicitanteSelected(solicitantes[it].id) },
