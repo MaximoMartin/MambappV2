@@ -14,18 +14,22 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Lugar
+import com.example.mambappv2.ui.components.ResourceCard
 import com.example.mambappv2.viewmodel.LugarViewModel
+import com.example.mambappv2.viewmodel.MonitoreoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LugarListScreen(
     navController: NavController,
-    viewModel: LugarViewModel
+    viewModel: LugarViewModel,
+    monitoreoViewModel: MonitoreoViewModel
 ) {
     val lugares by viewModel.lugares.collectAsState()
+    val lugarUsageCount by monitoreoViewModel.lugarUsageCount.collectAsState()
+    
     val showDialog = remember { mutableStateOf(false) }
     val editingLugar = remember { mutableStateOf<Lugar?>(null) }
-
     val showConfirmDelete = remember { mutableStateOf(false) }
     val lugarToDelete = remember { mutableStateOf<Lugar?>(null) }
 
@@ -76,30 +80,24 @@ fun LugarListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(lugares) { lugar ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("${lugar.nombre}, ${lugar.provincia}", style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    editingLugar.value = lugar
-                                    resetCampos(lugar)
-                                    showDialog.value = true
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                }
-                                IconButton(onClick = {
-                                    lugarToDelete.value = lugar
-                                    showConfirmDelete.value = true
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                                }
+                    val usageCount = lugarUsageCount[lugar.id] ?: 0
+                    
+                    ResourceCard(
+                        title = "${lugar.nombre}, ${lugar.provincia}",
+                        subtitle = "ID: ${lugar.id}",
+                        usageCount = usageCount,
+                        onEdit = {
+                            editingLugar.value = lugar
+                            resetCampos(lugar)
+                            showDialog.value = true
+                        },
+                        onDelete = {
+                            if (usageCount == 0) {
+                                lugarToDelete.value = lugar
+                                showConfirmDelete.value = true
                             }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -115,7 +113,7 @@ fun LugarListScreen(
                         OutlinedTextField(
                             value = nombre,
                             onValueChange = { nombre = it },
-                            label = { Text("Nombre del lugar") },
+                            label = { Text("Nombre") },
                             singleLine = true
                         )
                         OutlinedTextField(
@@ -129,9 +127,9 @@ fun LugarListScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         if (nombre.text.isNotBlank() && provincia.text.isNotBlank()) {
-                            val lugar = editingLugar.value
-                            if (lugar != null) {
-                                viewModel.updateLugar(lugar.copy(nombre = nombre.text, provincia = provincia.text))
+                            val actual = editingLugar.value
+                            if (actual != null) {
+                                viewModel.updateLugar(actual.copy(nombre = nombre.text, provincia = provincia.text))
                             } else {
                                 viewModel.addLugar(nombre.text, provincia.text)
                             }
@@ -150,23 +148,34 @@ fun LugarListScreen(
         }
 
         if (showConfirmDelete.value && lugarToDelete.value != null) {
+            val lugar = lugarToDelete.value!!
+            val currentUsageCount = lugarUsageCount[lugar.id] ?: 0
+            
             AlertDialog(
                 onDismissRequest = { showConfirmDelete.value = false },
                 title = { Text("¿Eliminar lugar?") },
-                text = { Text("Esta acción no se puede deshacer.") },
+                text = {
+                    if (currentUsageCount > 0) {
+                        Text("No se puede eliminar este lugar porque está siendo usado en $currentUsageCount monitoreo(s).")
+                    } else {
+                        Text("Esta acción no se puede deshacer.")
+                    }
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            lugarToDelete.value?.let { viewModel.deleteLugar(it) }
-                            showConfirmDelete.value = false
+                    if (currentUsageCount == 0) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteLugar(lugar)
+                                showConfirmDelete.value = false
+                            }
+                        ) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
                         }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmDelete.value = false }) {
-                        Text("Cancelar")
+                        Text(if (currentUsageCount > 0) "Entendido" else "Cancelar")
                     }
                 }
             )

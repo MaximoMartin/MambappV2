@@ -14,15 +14,20 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Medico
+import com.example.mambappv2.ui.components.ResourceCard
 import com.example.mambappv2.viewmodel.MedicoViewModel
+import com.example.mambappv2.viewmodel.MonitoreoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicoListScreen(
     navController: NavController,
-    viewModel: MedicoViewModel
+    viewModel: MedicoViewModel,
+    monitoreoViewModel: MonitoreoViewModel
 ) {
     val medicos by viewModel.medicos.collectAsState()
+    val medicoUsageCount by monitoreoViewModel.medicoUsageCount.collectAsState()
+    
     val showDialog = remember { mutableStateOf(false) }
     val editingMedico = remember { mutableStateOf<Medico?>(null) }
 
@@ -76,30 +81,24 @@ fun MedicoListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(medicos) { medico ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("${medico.nombre} ${medico.apellido}", style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    editingMedico.value = medico
-                                    resetCampos(medico)
-                                    showDialog.value = true
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                }
-                                IconButton(onClick = {
-                                    medicoToDelete.value = medico
-                                    showConfirmDelete.value = true
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                                }
+                    val usageCount = medicoUsageCount[medico.id] ?: 0
+                    
+                    ResourceCard(
+                        title = "${medico.nombre} ${medico.apellido}",
+                        subtitle = "ID: ${medico.id}",
+                        usageCount = usageCount,
+                        onEdit = {
+                            editingMedico.value = medico
+                            resetCampos(medico)
+                            showDialog.value = true
+                        },
+                        onDelete = {
+                            if (usageCount == 0) {
+                                medicoToDelete.value = medico
+                                showConfirmDelete.value = true
                             }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -150,23 +149,34 @@ fun MedicoListScreen(
         }
 
         if (showConfirmDelete.value && medicoToDelete.value != null) {
+            val medico = medicoToDelete.value!!
+            val currentUsageCount = medicoUsageCount[medico.id] ?: 0
+            
             AlertDialog(
                 onDismissRequest = { showConfirmDelete.value = false },
                 title = { Text("¿Eliminar médico?") },
-                text = { Text("Esta acción no se puede deshacer.") },
+                text = {
+                    if (currentUsageCount > 0) {
+                        Text("No se puede eliminar este médico porque está siendo usado en $currentUsageCount monitoreo(s).")
+                    } else {
+                        Text("Esta acción no se puede deshacer.")
+                    }
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            medicoToDelete.value?.let { viewModel.deleteMedico(it) }
-                            showConfirmDelete.value = false
+                    if (currentUsageCount == 0) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteMedico(medico)
+                                showConfirmDelete.value = false
+                            }
+                        ) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
                         }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmDelete.value = false }) {
-                        Text("Cancelar")
+                        Text(if (currentUsageCount > 0) "Entendido" else "Cancelar")
                     }
                 }
             )

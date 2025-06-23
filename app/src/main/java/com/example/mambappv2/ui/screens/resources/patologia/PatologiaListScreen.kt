@@ -14,15 +14,20 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Patologia
+import com.example.mambappv2.ui.components.ResourceCard
 import com.example.mambappv2.viewmodel.PatologiaViewModel
+import com.example.mambappv2.viewmodel.MonitoreoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatologiaListScreen(
     navController: NavController,
-    viewModel: PatologiaViewModel
+    viewModel: PatologiaViewModel,
+    monitoreoViewModel: MonitoreoViewModel
 ) {
     val patologias by viewModel.patologias.collectAsState()
+    val patologiaUsageCount by monitoreoViewModel.patologiaUsageCount.collectAsState()
+    
     val showDialog = remember { mutableStateOf(false) }
     val editingPatologia = remember { mutableStateOf<Patologia?>(null) }
 
@@ -74,30 +79,24 @@ fun PatologiaListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(patologias) { patologia ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(patologia.nombre, style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    editingPatologia.value = patologia
-                                    resetCampos(patologia)
-                                    showDialog.value = true
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                }
-                                IconButton(onClick = {
-                                    patologiaToDelete.value = patologia
-                                    showConfirmDelete.value = true
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                                }
+                    val usageCount = patologiaUsageCount[patologia.id] ?: 0
+                    
+                    ResourceCard(
+                        title = patologia.nombre,
+                        subtitle = "ID: ${patologia.id}",
+                        usageCount = usageCount,
+                        onEdit = {
+                            editingPatologia.value = patologia
+                            resetCampos(patologia)
+                            showDialog.value = true
+                        },
+                        onDelete = {
+                            if (usageCount == 0) {
+                                patologiaToDelete.value = patologia
+                                showConfirmDelete.value = true
                             }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -141,23 +140,34 @@ fun PatologiaListScreen(
         }
 
         if (showConfirmDelete.value && patologiaToDelete.value != null) {
+            val patologia = patologiaToDelete.value!!
+            val currentUsageCount = patologiaUsageCount[patologia.id] ?: 0
+            
             AlertDialog(
                 onDismissRequest = { showConfirmDelete.value = false },
                 title = { Text("¿Eliminar patología?") },
-                text = { Text("Esta acción no se puede deshacer.") },
+                text = {
+                    if (currentUsageCount > 0) {
+                        Text("No se puede eliminar esta patología porque está siendo usada en $currentUsageCount monitoreo(s).")
+                    } else {
+                        Text("Esta acción no se puede deshacer.")
+                    }
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            patologiaToDelete.value?.let { viewModel.deletePatologia(it) }
-                            showConfirmDelete.value = false
+                    if (currentUsageCount == 0) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deletePatologia(patologia)
+                                showConfirmDelete.value = false
+                            }
+                        ) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
                         }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmDelete.value = false }) {
-                        Text("Cancelar")
+                        Text(if (currentUsageCount > 0) "Entendido" else "Cancelar")
                     }
                 }
             )

@@ -14,27 +14,31 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Solicitante
+import com.example.mambappv2.ui.components.ResourceCard
 import com.example.mambappv2.viewmodel.SolicitanteViewModel
+import com.example.mambappv2.viewmodel.MonitoreoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SolicitanteListScreen(
     navController: NavController,
-    viewModel: SolicitanteViewModel
+    viewModel: SolicitanteViewModel,
+    monitoreoViewModel: MonitoreoViewModel
 ) {
     val solicitantes by viewModel.solicitantes.collectAsState()
+    val solicitanteUsageCount by monitoreoViewModel.solicitanteUsageCount.collectAsState()
+    
     val showDialog = remember { mutableStateOf(false) }
     val editing = remember { mutableStateOf<Solicitante?>(null) }
-
     val showConfirmDelete = remember { mutableStateOf(false) }
     val solicitanteToDelete = remember { mutableStateOf<Solicitante?>(null) }
 
     var nombre by remember { mutableStateOf(TextFieldValue()) }
     var apellido by remember { mutableStateOf(TextFieldValue()) }
 
-    fun resetCampos(s: Solicitante? = null) {
-        nombre = TextFieldValue(s?.nombre ?: "")
-        apellido = TextFieldValue(s?.apellido ?: "")
+    fun resetCampos(solicitante: Solicitante? = null) {
+        nombre = TextFieldValue(solicitante?.nombre ?: "")
+        apellido = TextFieldValue(solicitante?.apellido ?: "")
     }
 
     Scaffold(
@@ -76,30 +80,24 @@ fun SolicitanteListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(solicitantes) { solicitante ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("${solicitante.nombre} ${solicitante.apellido}", style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    editing.value = solicitante
-                                    resetCampos(solicitante)
-                                    showDialog.value = true
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                }
-                                IconButton(onClick = {
-                                    solicitanteToDelete.value = solicitante
-                                    showConfirmDelete.value = true
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                                }
+                    val usageCount = solicitanteUsageCount[solicitante.id] ?: 0
+                    
+                    ResourceCard(
+                        title = "${solicitante.nombre} ${solicitante.apellido}",
+                        subtitle = "ID: ${solicitante.id}",
+                        usageCount = usageCount,
+                        onEdit = {
+                            editing.value = solicitante
+                            resetCampos(solicitante)
+                            showDialog.value = true
+                        },
+                        onDelete = {
+                            if (usageCount == 0) {
+                                solicitanteToDelete.value = solicitante
+                                showConfirmDelete.value = true
                             }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -129,9 +127,9 @@ fun SolicitanteListScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         if (nombre.text.isNotBlank() && apellido.text.isNotBlank()) {
-                            val s = editing.value
-                            if (s != null) {
-                                viewModel.updateSolicitante(s.copy(nombre = nombre.text, apellido = apellido.text))
+                            val actual = editing.value
+                            if (actual != null) {
+                                viewModel.updateSolicitante(actual.copy(nombre = nombre.text, apellido = apellido.text))
                             } else {
                                 viewModel.addSolicitante(nombre.text, apellido.text)
                             }
@@ -150,23 +148,34 @@ fun SolicitanteListScreen(
         }
 
         if (showConfirmDelete.value && solicitanteToDelete.value != null) {
+            val solicitante = solicitanteToDelete.value!!
+            val currentUsageCount = solicitanteUsageCount[solicitante.id] ?: 0
+            
             AlertDialog(
                 onDismissRequest = { showConfirmDelete.value = false },
                 title = { Text("¿Eliminar solicitante?") },
-                text = { Text("Esta acción no se puede deshacer.") },
+                text = {
+                    if (currentUsageCount > 0) {
+                        Text("No se puede eliminar este solicitante porque está siendo usado en $currentUsageCount monitoreo(s).")
+                    } else {
+                        Text("Esta acción no se puede deshacer.")
+                    }
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            solicitanteToDelete.value?.let { viewModel.deleteSolicitante(it) }
-                            showConfirmDelete.value = false
+                    if (currentUsageCount == 0) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteSolicitante(solicitante)
+                                showConfirmDelete.value = false
+                            }
+                        ) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
                         }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmDelete.value = false }) {
-                        Text("Cancelar")
+                        Text(if (currentUsageCount > 0) "Entendido" else "Cancelar")
                     }
                 }
             )

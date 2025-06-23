@@ -14,15 +14,20 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Tecnico
+import com.example.mambappv2.ui.components.ResourceCard
 import com.example.mambappv2.viewmodel.TecnicoViewModel
+import com.example.mambappv2.viewmodel.MonitoreoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TecnicoListScreen(
     navController: NavController,
-    viewModel: TecnicoViewModel
+    viewModel: TecnicoViewModel,
+    monitoreoViewModel: MonitoreoViewModel
 ) {
     val tecnicos by viewModel.tecnicos.collectAsState()
+    val tecnicoUsageCount by monitoreoViewModel.tecnicoUsageCount.collectAsState()
+    
     val showDialog = remember { mutableStateOf(false) }
     val editingTecnico = remember { mutableStateOf<Tecnico?>(null) }
 
@@ -76,30 +81,24 @@ fun TecnicoListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(tecnicos) { tecnico ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("${tecnico.nombre} ${tecnico.apellido}", style = MaterialTheme.typography.titleMedium)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    editingTecnico.value = tecnico
-                                    resetCampos(tecnico)
-                                    showDialog.value = true
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                }
-                                IconButton(onClick = {
-                                    tecnicoToDelete.value = tecnico
-                                    showConfirmDelete.value = true
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                                }
+                    val usageCount = tecnicoUsageCount[tecnico.id] ?: 0
+                    
+                    ResourceCard(
+                        title = "${tecnico.nombre} ${tecnico.apellido}",
+                        subtitle = "ID: ${tecnico.id}",
+                        usageCount = usageCount,
+                        onEdit = {
+                            editingTecnico.value = tecnico
+                            resetCampos(tecnico)
+                            showDialog.value = true
+                        },
+                        onDelete = {
+                            if (usageCount == 0) {
+                                tecnicoToDelete.value = tecnico
+                                showConfirmDelete.value = true
                             }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -150,23 +149,34 @@ fun TecnicoListScreen(
         }
 
         if (showConfirmDelete.value && tecnicoToDelete.value != null) {
+            val tecnico = tecnicoToDelete.value!!
+            val currentUsageCount = tecnicoUsageCount[tecnico.id] ?: 0
+            
             AlertDialog(
                 onDismissRequest = { showConfirmDelete.value = false },
                 title = { Text("¿Eliminar técnico?") },
-                text = { Text("Esta acción no se puede deshacer.") },
+                text = {
+                    if (currentUsageCount > 0) {
+                        Text("No se puede eliminar este técnico porque está siendo usado en $currentUsageCount monitoreo(s).")
+                    } else {
+                        Text("Esta acción no se puede deshacer.")
+                    }
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            tecnicoToDelete.value?.let { viewModel.deleteTecnico(it) }
-                            showConfirmDelete.value = false
+                    if (currentUsageCount == 0) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteTecnico(tecnico)
+                                showConfirmDelete.value = false
+                            }
+                        ) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
                         }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmDelete.value = false }) {
-                        Text("Cancelar")
+                        Text(if (currentUsageCount > 0) "Entendido" else "Cancelar")
                     }
                 }
             )

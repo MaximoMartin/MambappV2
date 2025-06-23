@@ -14,7 +14,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.mambappv2.data.entities.Equipo
+import com.example.mambappv2.ui.components.ResourceCard
 import com.example.mambappv2.viewmodel.EquipoViewModel
+import com.example.mambappv2.viewmodel.MonitoreoViewModel
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 
@@ -22,9 +24,12 @@ import androidx.compose.ui.text.input.KeyboardType
 @Composable
 fun EquipoListScreen(
     navController: NavController,
-    viewModel: EquipoViewModel
+    viewModel: EquipoViewModel,
+    monitoreoViewModel: MonitoreoViewModel
 ) {
     val equipos by viewModel.equipos.collectAsState()
+    val equipoUsageCount by monitoreoViewModel.equipoUsageCount.collectAsState()
+    
     val showDialog = remember { mutableStateOf(false) }
     val editingEquipo = remember { mutableStateOf<Equipo?>(null) }
 
@@ -78,33 +83,27 @@ fun EquipoListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(equipos) { equipo ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("N°: ${equipo.numero}", style = MaterialTheme.typography.titleMedium)
-                            if (equipo.descripcion.isNotBlank()) {
-                                Text("Descripción: ${equipo.descripcion}")
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                IconButton(onClick = {
-                                    editingEquipo.value = equipo
-                                    resetCampos(equipo)
-                                    showDialog.value = true
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                                }
-                                IconButton(onClick = {
-                                    equipoToDelete.value = equipo
-                                    showConfirmDelete.value = true
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                                }
+                    val usageCount = equipoUsageCount[equipo.id] ?: 0
+                    
+                    ResourceCard(
+                        title = "Equipo N°: ${equipo.numero}",
+                        subtitle = if (equipo.descripcion.isNotBlank()) 
+                            equipo.descripcion 
+                        else 
+                            "ID: ${equipo.id}",
+                        usageCount = usageCount,
+                        onEdit = {
+                            editingEquipo.value = equipo
+                            resetCampos(equipo)
+                            showDialog.value = true
+                        },
+                        onDelete = {
+                            if (usageCount == 0) {
+                                equipoToDelete.value = equipo
+                                showConfirmDelete.value = true
                             }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -123,7 +122,7 @@ fun EquipoListScreen(
                             label = { Text("Número de Equipo") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number) // ✅
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                         )
                         OutlinedTextField(
                             value = descripcion,
@@ -161,23 +160,34 @@ fun EquipoListScreen(
         }
 
         if (showConfirmDelete.value && equipoToDelete.value != null) {
+            val equipo = equipoToDelete.value!!
+            val currentUsageCount = equipoUsageCount[equipo.id] ?: 0
+            
             AlertDialog(
                 onDismissRequest = { showConfirmDelete.value = false },
                 title = { Text("¿Eliminar equipo?") },
-                text = { Text("Esta acción no se puede deshacer.") },
+                text = {
+                    if (currentUsageCount > 0) {
+                        Text("No se puede eliminar este equipo porque está siendo usado en $currentUsageCount monitoreo(s).")
+                    } else {
+                        Text("Esta acción no se puede deshacer.")
+                    }
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            equipoToDelete.value?.let { viewModel.deleteEquipo(it) }
-                            showConfirmDelete.value = false
+                    if (currentUsageCount == 0) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteEquipo(equipo)
+                                showConfirmDelete.value = false
+                            }
+                        ) {
+                            Text("Eliminar", color = MaterialTheme.colorScheme.error)
                         }
-                    ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showConfirmDelete.value = false }) {
-                        Text("Cancelar")
+                        Text(if (currentUsageCount > 0) "Entendido" else "Cancelar")
                     }
                 }
             )

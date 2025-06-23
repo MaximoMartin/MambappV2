@@ -131,25 +131,25 @@ class MainActivity : ComponentActivity() {
 
                     // Pantallas de listado por entidad
                     composable(NavigationRoutes.PacienteList.route) {
-                        PacienteListScreen(navController = navController, viewModel = pacienteVM)
+                        PacienteListScreen(navController = navController, viewModel = pacienteVM, monitoreoViewModel = monitoreoVM)
                     }
                     composable(NavigationRoutes.MedicoList.route) {
-                        MedicoListScreen(navController = navController, viewModel = medicoVM)
+                        MedicoListScreen(navController = navController, viewModel = medicoVM, monitoreoViewModel = monitoreoVM)
                     }
                     composable(NavigationRoutes.TecnicoList.route) {
-                        TecnicoListScreen(navController = navController, viewModel = tecnicoVM)
+                        TecnicoListScreen(navController = navController, viewModel = tecnicoVM, monitoreoViewModel = monitoreoVM)
                     }
                     composable(NavigationRoutes.SolicitanteList.route) {
-                        SolicitanteListScreen(navController = navController, viewModel = solicitanteVM)
+                        SolicitanteListScreen(navController = navController, viewModel = solicitanteVM, monitoreoViewModel = monitoreoVM)
                     }
                     composable(NavigationRoutes.LugarList.route) {
-                        LugarListScreen(navController = navController, viewModel = lugarVM)
+                        LugarListScreen(navController = navController, viewModel = lugarVM, monitoreoViewModel = monitoreoVM)
                     }
                     composable(NavigationRoutes.PatologiaList.route) {
-                        PatologiaListScreen(navController = navController, viewModel = patologiaVM)
+                        PatologiaListScreen(navController = navController, viewModel = patologiaVM, monitoreoViewModel = monitoreoVM)
                     }
                     composable(NavigationRoutes.EquipoList.route) {
-                        EquipoListScreen(navController = navController, viewModel = equipoVM)
+                        EquipoListScreen(navController = navController, viewModel = equipoVM, monitoreoViewModel = monitoreoVM)
                     }
                 }
             }
