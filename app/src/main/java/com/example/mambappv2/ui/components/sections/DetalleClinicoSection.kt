@@ -183,8 +183,8 @@ private fun ModernSwitchField(
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically

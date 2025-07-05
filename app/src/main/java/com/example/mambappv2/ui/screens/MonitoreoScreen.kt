@@ -232,25 +232,25 @@ fun MonitoreoScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Fondo animado
         MonitoreoBackground(isDarkMode = isDarkMode, waveOffset = waveOffset)
-        
-        Scaffold(
+
+    Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
+        topBar = {
                 ModernMonitoreoTopBar(
                     title = if (monitoreo != null) "Editar Monitoreo" else "Nuevo Monitoreo",
                     subtitle = if (monitoreo != null) "Registro #${monitoreo.nroRegistro}" else "Completá los campos",
                     onBackClick = onBack
-                )
-            },
-            floatingActionButton = {
+            )
+        },
+        floatingActionButton = {
                 ModernSaveButton(onClick = { saveMonitoreo() })
-            }
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
                     .padding(horizontal = 16.dp)
-                    .verticalScroll(scrollState),
+                .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -274,15 +274,15 @@ fun MonitoreoScreen(
                         title = "Fechas del Procedimiento",
                         icon = Icons.Default.CalendarToday,
                         gradientColors = listOf(HealthTeal, MedicalTeal80)
-                    ) {
-                        FechaSection(
-                            fechaRealizado = formState.fechaRealizado,
-                            onFechaRealizadoChange = { formState.fechaRealizado = it },
-                            fechaPresentado = formState.fechaPresentado,
-                            onFechaPresentadoChange = { formState.fechaPresentado = it },
-                            fechaCobrado = formState.fechaCobrado,
-                            onFechaCobradoChange = { formState.fechaCobrado = it }
-                        )
+        ) {
+            FechaSection(
+                fechaRealizado = formState.fechaRealizado,
+                onFechaRealizadoChange = { formState.fechaRealizado = it },
+                fechaPresentado = formState.fechaPresentado,
+                onFechaPresentadoChange = { formState.fechaPresentado = it },
+                fechaCobrado = formState.fechaCobrado,
+                onFechaCobradoChange = { formState.fechaCobrado = it }
+            )
                     }
                 }
 
@@ -296,25 +296,25 @@ fun MonitoreoScreen(
                         icon = Icons.Default.Person,
                         gradientColors = listOf(HealthBlue, MedicalBlue80)
                     ) {
-                        PacienteSection(
-                            dniPaciente = formState.dniPaciente,
-                            onDniChange = { formState.dniPaciente = it },
-                            paciente = paciente,
-                            onAgregarClick = {
-                                formState.showDialogTipo = "Paciente"
-                                formState.setCamposDialog("DNI", "Nombre", "Apellido", "Edad", "Mutual")
-                                formState.camposDialog[0].second.value = formState.dniPaciente
-                            },
-                            onEditarClick = {
-                                formState.showDialogTipo = "Paciente"
-                                formState.setCamposDialog("DNI", "Nombre", "Apellido", "Edad", "Mutual")
-                                formState.camposDialog[0].second.value = paciente?.dniPaciente?.toString() ?: ""
-                                formState.camposDialog[1].second.value = paciente?.nombre ?: ""
-                                formState.camposDialog[2].second.value = paciente?.apellido ?: ""
-                                formState.camposDialog[3].second.value = paciente?.edad?.toString() ?: ""
-                                formState.camposDialog[4].second.value = paciente?.mutual ?: ""
-                            }
-                        )
+            PacienteSection(
+                dniPaciente = formState.dniPaciente,
+                onDniChange = { formState.dniPaciente = it },
+                paciente = paciente,
+                onAgregarClick = {
+                    formState.showDialogTipo = "Paciente"
+                    formState.setCamposDialog("DNI", "Nombre", "Apellido", "Edad", "Mutual")
+                    formState.camposDialog[0].second.value = formState.dniPaciente
+                },
+                onEditarClick = {
+                    formState.showDialogTipo = "Paciente"
+                    formState.setCamposDialog("DNI", "Nombre", "Apellido", "Edad", "Mutual")
+                    formState.camposDialog[0].second.value = paciente?.dniPaciente?.toString() ?: ""
+                    formState.camposDialog[1].second.value = paciente?.nombre ?: ""
+                    formState.camposDialog[2].second.value = paciente?.apellido ?: ""
+                    formState.camposDialog[3].second.value = paciente?.edad?.toString() ?: ""
+                    formState.camposDialog[4].second.value = paciente?.mutual ?: ""
+                }
+            )
                     }
                 }
 
@@ -328,29 +328,29 @@ fun MonitoreoScreen(
                         icon = Icons.Default.Group,
                         gradientColors = listOf(HealthGreen, MedicalGreen80)
                     ) {
-                        ProfesionalesSection(
-                            medicos = medicos,
-                            selectedMedicoId = formState.selectedMedicoId,
-                            onMedicoSelected = { formState.selectedMedicoId = it },
-                            onAddMedico = {
-                                formState.showDialogTipo = "Médico"
-                                formState.setCamposDialog("Nombre", "Apellido")
-                            },
-                            tecnicos = tecnicos,
-                            selectedTecnicoId = formState.selectedTecnicoId,
-                            onTecnicoSelected = { formState.selectedTecnicoId = it },
-                            onAddTecnico = {
-                                formState.showDialogTipo = "Técnico"
-                                formState.setCamposDialog("Nombre", "Apellido")
-                            },
-                            solicitantes = solicitantes,
-                            selectedSolicitanteId = formState.selectedSolicitanteId,
-                            onSolicitanteSelected = { formState.selectedSolicitanteId = it },
-                            onAddSolicitante = {
-                                formState.showDialogTipo = "Solicitante"
-                                formState.setCamposDialog("Nombre", "Apellido")
-                            }
-                        )
+            ProfesionalesSection(
+                medicos = medicos,
+                selectedMedicoId = formState.selectedMedicoId,
+                onMedicoSelected = { formState.selectedMedicoId = it },
+                onAddMedico = {
+                    formState.showDialogTipo = "Médico"
+                    formState.setCamposDialog("Nombre", "Apellido")
+                },
+                tecnicos = tecnicos,
+                selectedTecnicoId = formState.selectedTecnicoId,
+                onTecnicoSelected = { formState.selectedTecnicoId = it },
+                onAddTecnico = {
+                    formState.showDialogTipo = "Técnico"
+                    formState.setCamposDialog("Nombre", "Apellido")
+                },
+                solicitantes = solicitantes,
+                selectedSolicitanteId = formState.selectedSolicitanteId,
+                onSolicitanteSelected = { formState.selectedSolicitanteId = it },
+                onAddSolicitante = {
+                    formState.showDialogTipo = "Solicitante"
+                    formState.setCamposDialog("Nombre", "Apellido")
+                }
+            )
                     }
                 }
 
@@ -364,15 +364,15 @@ fun MonitoreoScreen(
                         icon = Icons.Default.Place,
                         gradientColors = listOf(MedicalTeal40, HealthTeal)
                     ) {
-                        LugarSection(
-                            lugares = lugares,
-                            selectedLugarId = formState.selectedLugarId,
-                            onLugarSelected = { formState.selectedLugarId = it },
-                            onAddLugar = {
-                                formState.showDialogTipo = "Lugar"
-                                formState.setCamposDialog("Nombre", "Provincia")
-                            }
-                        )
+            LugarSection(
+                lugares = lugares,
+                selectedLugarId = formState.selectedLugarId,
+                onLugarSelected = { formState.selectedLugarId = it },
+                onAddLugar = {
+                    formState.showDialogTipo = "Lugar"
+                    formState.setCamposDialog("Nombre", "Provincia")
+                }
+            )
                     }
                 }
 
@@ -386,15 +386,15 @@ fun MonitoreoScreen(
                         icon = Icons.Default.MedicalServices,
                         gradientColors = listOf(MedicalBlue40, HealthBlue)
                     ) {
-                        PatologiaSection(
-                            patologias = patologias,
-                            selectedPatologiaId = formState.selectedPatologiaId,
-                            onPatologiaSelected = { formState.selectedPatologiaId = it },
-                            onAddPatologia = {
-                                formState.showDialogTipo = "Patología"
-                                formState.setCamposDialog("Nombre")
-                            }
-                        )
+            PatologiaSection(
+                patologias = patologias,
+                selectedPatologiaId = formState.selectedPatologiaId,
+                onPatologiaSelected = { formState.selectedPatologiaId = it },
+                onAddPatologia = {
+                    formState.showDialogTipo = "Patología"
+                    formState.setCamposDialog("Nombre")
+                }
+            )
                     }
                 }
 
@@ -408,16 +408,16 @@ fun MonitoreoScreen(
                         icon = Icons.Default.Description,
                         gradientColors = listOf(MedicalGreen40, HealthGreen)
                     ) {
-                        DetalleClinicoSection(
-                            anestesia = formState.anestesia,
-                            onAnestesiaChange = { formState.anestesia = it },
-                            complicacion = formState.complicacion,
-                            onComplicacionChange = { formState.complicacion = it },
-                            detalleComplicacion = formState.detalleComplicacion,
-                            onDetalleComplicacionChange = { formState.detalleComplicacion = it },
-                            cambioMotor = formState.cambioMotor,
-                            onCambioMotorChange = { formState.cambioMotor = it }
-                        )
+            DetalleClinicoSection(
+                anestesia = formState.anestesia,
+                onAnestesiaChange = { formState.anestesia = it },
+                complicacion = formState.complicacion,
+                onComplicacionChange = { formState.complicacion = it },
+                detalleComplicacion = formState.detalleComplicacion,
+                onDetalleComplicacionChange = { formState.detalleComplicacion = it },
+                cambioMotor = formState.cambioMotor,
+                onCambioMotorChange = { formState.cambioMotor = it }
+            )
                     }
                 }
 
@@ -431,15 +431,15 @@ fun MonitoreoScreen(
                         icon = Icons.Default.Devices,
                         gradientColors = listOf(HealthOrange, Color(0xFFFFB74D))
                     ) {
-                        EquipoSection(
-                            equipos = equipos,
-                            selectedEquipoId = formState.selectedEquipoId,
-                            onEquipoSelected = { formState.selectedEquipoId = it },
-                            onAddEquipo = {
-                                formState.showDialogTipo = "Equipo"
-                                formState.setCamposDialog("Número", "Descripción")
-                            }
-                        )
+            EquipoSection(
+                equipos = equipos,
+                selectedEquipoId = formState.selectedEquipoId,
+                onEquipoSelected = { formState.selectedEquipoId = it },
+                onAddEquipo = {
+                    formState.showDialogTipo = "Equipo"
+                    formState.setCamposDialog("Número", "Descripción")
+                }
+            )
                     }
                 }
 

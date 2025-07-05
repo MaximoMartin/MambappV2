@@ -68,37 +68,37 @@ fun PatologiaListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Fondo animado con colores morados para patologías
         PatologiaListBackground(isDarkMode = isDarkMode, waveOffset = waveOffset)
-        
-        Scaffold(
+
+    Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
+        topBar = {
                 ModernPatologiaTopBar(
                     patologiaCount = patologias.size,
                     onBackClick = { navController.popBackStack() }
-                )
-            },
-            floatingActionButton = {
+            )
+        },
+        floatingActionButton = {
                 ModernPatologiaFAB(
                     onClick = {
-                        editingPatologia.value = null
-                        resetCampos()
-                        showDialog.value = true
+                editingPatologia.value = null
+                resetCampos()
+                showDialog.value = true
                     }
                 )
-            }
-        ) { padding ->
-            if (patologias.isEmpty()) {
+        }
+    ) { padding ->
+        if (patologias.isEmpty()) {
                 ModernEmptyState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                     isDarkMode = isDarkMode
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
@@ -120,7 +120,7 @@ fun PatologiaListScreen(
                                     delayMillis = index * 100
                                 )
                             )
-                        ) {
+                            ) {
                             ResourceCard(
                                 title = patologia.nombre,
                                 subtitle = "ID: ${patologia.id}",
@@ -132,8 +132,8 @@ fun PatologiaListScreen(
                                 },
                                 onDelete = {
                                     if (usageCount == 0) {
-                                        patologiaToDelete.value = patologia
-                                        showConfirmDelete.value = true
+                                    patologiaToDelete.value = patologia
+                                    showConfirmDelete.value = true
                                     }
                                 }
                             )
@@ -158,17 +158,17 @@ fun PatologiaListScreen(
                 onDismiss = { showDialog.value = false },
                 onConfirm = {
                     if (nombreField.value.isNotBlank()) {
-                        val patologia = editingPatologia.value
-                        if (patologia != null) {
+                            val patologia = editingPatologia.value
+                            if (patologia != null) {
                             viewModel.updatePatologia(patologia.copy(nombre = nombreField.value))
-                        } else {
+                            } else {
                             viewModel.addPatologia(nombreField.value)
+                            }
+                            showDialog.value = false
                         }
-                        showDialog.value = false
-                    }
                 }
             )
-        }
+                    }
 
         // Diálogo de confirmación de eliminación moderno
         if (showConfirmDelete.value && patologiaToDelete.value != null) {
@@ -187,8 +187,8 @@ fun PatologiaListScreen(
                 onConfirm = {
                     if (currentUsageCount == 0) {
                         viewModel.deletePatologia(patologia)
-                        showConfirmDelete.value = false
-                    }
+                            showConfirmDelete.value = false
+                        }
                 },
                 isDarkMode = isDarkMode
             )
@@ -311,7 +311,7 @@ private fun ModernPatologiaTopBar(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
+                    }
             
             Card(
                 modifier = Modifier.size(44.dp),
@@ -444,13 +444,13 @@ private fun ModernDeleteDialog(
                     )
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
+                    }
                 }
-            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(if (canDelete) "Cancelar" else "Entendido")
-            }
+        }
         },
         containerColor = if (isDarkMode) Color(0xFF2D1B4E) else Color.White,
         shape = RoundedCornerShape(16.dp)

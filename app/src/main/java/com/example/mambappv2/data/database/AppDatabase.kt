@@ -15,9 +15,10 @@ import com.example.mambappv2.data.entities.*
         Patologia::class,
         Solicitante::class,
         Monitoreo::class,
-        Equipo::class
+        Equipo::class,
+        SyncMetadata::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,4 +30,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun solicitanteDao(): SolicitanteDao
     abstract fun equipoDao(): EquipoDao
     abstract fun monitoreoDao(): MonitoreoDao
+    abstract fun syncMetadataDao(): SyncMetadataDao
 }

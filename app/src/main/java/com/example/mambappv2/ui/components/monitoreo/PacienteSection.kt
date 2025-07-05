@@ -139,7 +139,7 @@ private fun ModernPatientInfo(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        ) {
                 Icon(
                     imageVector = if (paciente != null) Icons.Default.CheckCircle else Icons.Default.Info,
                     contentDescription = "Estado",

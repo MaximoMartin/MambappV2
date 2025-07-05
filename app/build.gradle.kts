@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
+    id("com.google.gms.google-services") version "4.4.0" apply false
 }
 
 android {
@@ -75,6 +76,23 @@ dependencies {
     implementation("androidx.room:room-runtime:$room")
     implementation("androidx.room:room-ktx:$room")
     kapt("androidx.room:room-compiler:$room")
+
+    // Sincronización y APIs
+    // Google Sheets API
+    implementation("com.google.apis:google-api-services-sheets:v4-rev20230526-2.0.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+    implementation("com.google.api-client:google-api-client-android:2.0.0")
+    
+    // HTTP y JSON
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    
+    // Work Manager para sincronización en background
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    
+    // Conectividad y estado de red
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
 
     // Tests
     testImplementation(libs.junit)

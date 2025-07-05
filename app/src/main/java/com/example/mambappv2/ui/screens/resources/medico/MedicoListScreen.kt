@@ -70,37 +70,37 @@ fun MedicoListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Fondo animado con colores verdes para médicos
         MedicoListBackground(isDarkMode = isDarkMode, waveOffset = waveOffset)
-        
-        Scaffold(
+
+    Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
+        topBar = {
                 ModernMedicoTopBar(
                     medicoCount = medicos.size,
                     onBackClick = { navController.popBackStack() }
-                )
-            },
-            floatingActionButton = {
+            )
+        },
+        floatingActionButton = {
                 ModernMedicoFAB(
                     onClick = {
-                        editingMedico.value = null
-                        resetCampos()
-                        showDialog.value = true
+                editingMedico.value = null
+                resetCampos()
+                showDialog.value = true
                     }
                 )
-            }
-        ) { padding ->
-            if (medicos.isEmpty()) {
+        }
+    ) { padding ->
+        if (medicos.isEmpty()) {
                 ModernEmptyState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                     isDarkMode = isDarkMode
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
@@ -134,8 +134,8 @@ fun MedicoListScreen(
                                 },
                                 onDelete = {
                                     if (usageCount == 0) {
-                                        medicoToDelete.value = medico
-                                        showConfirmDelete.value = true
+                                    medicoToDelete.value = medico
+                                    showConfirmDelete.value = true
                                     }
                                 }
                             )
@@ -161,17 +161,17 @@ fun MedicoListScreen(
                 onDismiss = { showDialog.value = false },
                 onConfirm = {
                     if (nombreField.value.isNotBlank() && apellidoField.value.isNotBlank()) {
-                        val actual = editingMedico.value
-                        if (actual != null) {
+                            val actual = editingMedico.value
+                            if (actual != null) {
                             viewModel.updateMedico(actual.copy(nombre = nombreField.value, apellido = apellidoField.value))
-                        } else {
+                            } else {
                             viewModel.addMedico(nombreField.value, apellidoField.value)
+                            }
+                            showDialog.value = false
                         }
-                        showDialog.value = false
-                    }
                 }
             )
-        }
+                    }
 
         // Diálogo de confirmación de eliminación moderno
         if (showConfirmDelete.value && medicoToDelete.value != null) {
@@ -190,8 +190,8 @@ fun MedicoListScreen(
                 onConfirm = {
                     if (currentUsageCount == 0) {
                         viewModel.deleteMedico(medico)
-                        showConfirmDelete.value = false
-                    }
+                            showConfirmDelete.value = false
+                        }
                 },
                 isDarkMode = isDarkMode
             )
@@ -314,7 +314,7 @@ private fun ModernMedicoTopBar(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
+                    }
             
             Card(
                 modifier = Modifier.size(44.dp),
@@ -447,13 +447,13 @@ private fun ModernDeleteDialog(
                     )
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
+                    }
                 }
-            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(if (canDelete) "Cancelar" else "Entendido")
-            }
+        }
         },
         containerColor = if (isDarkMode) Color(0xFF1A502E) else Color.White,
         shape = RoundedCornerShape(16.dp)

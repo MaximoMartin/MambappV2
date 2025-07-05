@@ -70,37 +70,37 @@ fun TecnicoListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Fondo animado con colores teal para técnicos
         TecnicoListBackground(isDarkMode = isDarkMode, waveOffset = waveOffset)
-        
-        Scaffold(
+
+    Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
+        topBar = {
                 ModernTecnicoTopBar(
                     tecnicoCount = tecnicos.size,
                     onBackClick = { navController.popBackStack() }
-                )
-            },
-            floatingActionButton = {
+            )
+        },
+        floatingActionButton = {
                 ModernTecnicoFAB(
                     onClick = {
-                        editingTecnico.value = null
-                        resetCampos()
-                        showDialog.value = true
+                editingTecnico.value = null
+                resetCampos()
+                showDialog.value = true
                     }
                 )
-            }
-        ) { padding ->
-            if (tecnicos.isEmpty()) {
+        }
+    ) { padding ->
+        if (tecnicos.isEmpty()) {
                 ModernEmptyState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                     isDarkMode = isDarkMode
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
@@ -134,8 +134,8 @@ fun TecnicoListScreen(
                                 },
                                 onDelete = {
                                     if (usageCount == 0) {
-                                        tecnicoToDelete.value = tecnico
-                                        showConfirmDelete.value = true
+                                    tecnicoToDelete.value = tecnico
+                                    showConfirmDelete.value = true
                                     }
                                 }
                             )
@@ -161,17 +161,17 @@ fun TecnicoListScreen(
                 onDismiss = { showDialog.value = false },
                 onConfirm = {
                     if (nombreField.value.isNotBlank() && apellidoField.value.isNotBlank()) {
-                        val actual = editingTecnico.value
-                        if (actual != null) {
+                            val actual = editingTecnico.value
+                            if (actual != null) {
                             viewModel.updateTecnico(actual.copy(nombre = nombreField.value, apellido = apellidoField.value))
-                        } else {
+                            } else {
                             viewModel.addTecnico(nombreField.value, apellidoField.value)
+                            }
+                            showDialog.value = false
                         }
-                        showDialog.value = false
-                    }
                 }
             )
-        }
+                    }
 
         // Diálogo de confirmación de eliminación moderno
         if (showConfirmDelete.value && tecnicoToDelete.value != null) {
@@ -190,8 +190,8 @@ fun TecnicoListScreen(
                 onConfirm = {
                     if (currentUsageCount == 0) {
                         viewModel.deleteTecnico(tecnico)
-                        showConfirmDelete.value = false
-                    }
+                            showConfirmDelete.value = false
+                        }
                 },
                 isDarkMode = isDarkMode
             )
@@ -314,7 +314,7 @@ private fun ModernTecnicoTopBar(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
+                    }
             
             Card(
                 modifier = Modifier.size(44.dp),
@@ -447,13 +447,13 @@ private fun ModernDeleteDialog(
                     )
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
+                    }
                 }
-            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(if (canDelete) "Cancelar" else "Entendido")
-            }
+        }
         },
         containerColor = if (isDarkMode) Color(0xFF1A3850) else Color.White,
         shape = RoundedCornerShape(16.dp)

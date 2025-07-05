@@ -76,37 +76,37 @@ fun PacienteListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Fondo animado con colores azules para pacientes
         PacienteListBackground(isDarkMode = isDarkMode, waveOffset = waveOffset)
-        
-        Scaffold(
+
+    Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
+        topBar = {
                 ModernPacienteTopBar(
                     pacienteCount = pacientes.size,
                     onBackClick = { navController.popBackStack() }
-                )
-            },
-            floatingActionButton = {
+            )
+        },
+        floatingActionButton = {
                 ModernPacienteFAB(
                     onClick = {
-                        editingPaciente.value = null
-                        resetCampos()
-                        showDialog.value = true
+                editingPaciente.value = null
+                resetCampos()
+                showDialog.value = true
                     }
                 )
-            }
-        ) { padding ->
-            if (pacientes.isEmpty()) {
+        }
+    ) { padding ->
+        if (pacientes.isEmpty()) {
                 ModernEmptyState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                     isDarkMode = isDarkMode
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
@@ -133,16 +133,16 @@ fun PacienteListScreen(
                                 title = "${paciente.nombre} ${paciente.apellido}",
                                 subtitle = "DNI: ${paciente.dniPaciente} • Edad: ${paciente.edad} • ${paciente.mutual}",
                                 usageCount = usageCount,
-                                onEdit = {
-                                    editingPaciente.value = paciente
-                                    resetCampos(paciente)
-                                    showDialog.value = true
-                                },
-                                onDelete = {
+                        onEdit = {
+                            editingPaciente.value = paciente
+                            resetCampos(paciente)
+                            showDialog.value = true
+                        },
+                        onDelete = {
                                     if (usageCount == 0) {
-                                        pacienteToDelete.value = paciente
-                                        showConfirmDelete.value = true
-                                    }
+                            pacienteToDelete.value = paciente
+                            showConfirmDelete.value = true
+                        }
                                 }
                             )
                         }
@@ -177,19 +177,19 @@ fun PacienteListScreen(
                             val actual = editingPaciente.value
 
                             if (actual != null) {
-                                viewModel.updatePaciente(
+                        viewModel.updatePaciente(
                                     actual.copy(
-                                        dniPaciente = dni,
+                                dniPaciente = dni,
                                         nombre = nombreField.value,
                                         apellido = apellidoField.value,
-                                        edad = edad,
+                                edad = edad,
                                         mutual = mutualField.value
-                                    )
-                                )
+                            )
+                        )
                             } else {
                                 viewModel.addPaciente(dni, nombreField.value, apellidoField.value, edad, mutualField.value)
-                            }
-                            showDialog.value = false
+                    }
+                    showDialog.value = false
                         } catch (e: NumberFormatException) {
                             // Mantener diálogo abierto si hay error de formato
                         }
@@ -215,8 +215,8 @@ fun PacienteListScreen(
                 onConfirm = {
                     if (currentUsageCount == 0) {
                         viewModel.deletePaciente(paciente)
-                        showConfirmDelete.value = false
-                    }
+                            showConfirmDelete.value = false
+                        }
                 },
                 isDarkMode = isDarkMode
             )

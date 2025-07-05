@@ -70,37 +70,37 @@ fun SolicitanteListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Fondo animado con colores dorados para solicitantes
         SolicitanteListBackground(isDarkMode = isDarkMode, waveOffset = waveOffset)
-        
-        Scaffold(
+
+    Scaffold(
             containerColor = Color.Transparent,
-            topBar = {
+        topBar = {
                 ModernSolicitanteTopBar(
                     solicitanteCount = solicitantes.size,
                     onBackClick = { navController.popBackStack() }
-                )
-            },
-            floatingActionButton = {
+            )
+        },
+        floatingActionButton = {
                 ModernSolicitanteFAB(
                     onClick = {
-                        editing.value = null
-                        resetCampos()
-                        showDialog.value = true
+                editing.value = null
+                resetCampos()
+                showDialog.value = true
                     }
                 )
-            }
-        ) { padding ->
-            if (solicitantes.isEmpty()) {
+        }
+    ) { padding ->
+        if (solicitantes.isEmpty()) {
                 ModernEmptyState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                     isDarkMode = isDarkMode
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
@@ -134,8 +134,8 @@ fun SolicitanteListScreen(
                                 },
                                 onDelete = {
                                     if (usageCount == 0) {
-                                        solicitanteToDelete.value = solicitante
-                                        showConfirmDelete.value = true
+                                    solicitanteToDelete.value = solicitante
+                                    showConfirmDelete.value = true
                                     }
                                 }
                             )
@@ -164,14 +164,14 @@ fun SolicitanteListScreen(
                         val actual = editing.value
                         if (actual != null) {
                             viewModel.updateSolicitante(actual.copy(nombre = nombreField.value, apellido = apellidoField.value))
-                        } else {
+                            } else {
                             viewModel.addSolicitante(nombreField.value, apellidoField.value)
+                            }
+                            showDialog.value = false
                         }
-                        showDialog.value = false
-                    }
                 }
             )
-        }
+                    }
 
         // Diálogo de confirmación de eliminación moderno
         if (showConfirmDelete.value && solicitanteToDelete.value != null) {
@@ -190,8 +190,8 @@ fun SolicitanteListScreen(
                 onConfirm = {
                     if (currentUsageCount == 0) {
                         viewModel.deleteSolicitante(solicitante)
-                        showConfirmDelete.value = false
-                    }
+                            showConfirmDelete.value = false
+                        }
                 },
                 isDarkMode = isDarkMode
             )
@@ -314,7 +314,7 @@ private fun ModernSolicitanteTopBar(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
+                    }
             
             Card(
                 modifier = Modifier.size(44.dp),
@@ -447,13 +447,13 @@ private fun ModernDeleteDialog(
                     )
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
+                    }
                 }
-            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(if (canDelete) "Cancelar" else "Entendido")
-            }
+        }
         },
         containerColor = if (isDarkMode) Color(0xFF3E2723) else Color.White,
         shape = RoundedCornerShape(16.dp)
